@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>AElfScan.TokenApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\AElfScan.TokenApp\AElfScan.TokenApp.csproj" />
+      <ProjectReference Include="..\AElfScan.TokenApp.Orleans.TestBase\AElfScan.TokenApp.Orleans.TestBase.csproj" />
+      <ProjectReference Include="..\AElfScan.TokenApp.TestBase\AElfScan.TokenApp.TestBase.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AeFinder.App" Version="0.0.2" />
+      <PackageReference Include="AutoMapper" Version="12.0.0" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+      <PackageReference Include="coverlet.collector" Version="3.2.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Shouldly" Version="4.1.0" />
+    </ItemGroup>
+</Project>

@@ -1,1 +1,1 @@
-# aelfscan-token-app
+# AElfScan-token-app
