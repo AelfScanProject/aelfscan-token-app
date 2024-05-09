@@ -12,6 +12,7 @@ using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Types;
+using Newtonsoft.Json;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Threading;
 
@@ -103,7 +104,17 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
             },
             Transaction = new AeFinder.Sdk.Processor.Transaction()
             {
-                TransactionId = TransactionId
+                TransactionId = TransactionId,
+                Status = TransactionStatus.Mined,
+                ExtraProperties = new Dictionary<string, string>
+                {
+                    {
+                        "TransactionFee", JsonConvert.SerializeObject(new Dictionary<string, long>
+                        {
+                            { "ELF", 123L }
+                        })
+                    }
+                } 
             },
             LogEvent = logEvent
         };

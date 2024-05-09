@@ -18,4 +18,6 @@ public class TransferInfo : AeFinderEntity, IAeFinderEntity
     [Keyword] public string IssueChainId { get; set; }
     public long ParentChainHeight { get; set; }
     [Keyword] public string TransferTransactionId { get; set; }
+    [Keyword] public string Status { get; set; }
+    public Dictionary<string, string> ExtraProperties { get; set; }
 }

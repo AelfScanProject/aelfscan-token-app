@@ -210,6 +210,8 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         transferInfo.Id = Guid.NewGuid().ToString();
         transferInfo.FormatAmount = transferInfo.Amount / (decimal)Math.Pow(10, transferInfo.Token.Decimals);
         transferInfo.TransactionId = context.Transaction.TransactionId;
+        transferInfo.ExtraProperties = context.Transaction.ExtraProperties;
+        transferInfo.Status = context.Transaction.Status.ToString();
         await SaveEntityAsync(transferInfo);
     }
 }

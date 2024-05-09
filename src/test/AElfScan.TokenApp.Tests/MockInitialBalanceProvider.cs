@@ -36,17 +36,6 @@ public class MockInitialBalanceProvider : IInitialBalanceProvider, ISingletonDep
                     "Address4,NFT-1,200",
                     "Address1,NFT-2,300"
                 }
-            },
-            {
-                99, new List<string>
-                {
-                    "Address1,ELF,100000000",
-                    "Address2,ELF,200000000",
-                    "Address3,NFT-0,1",
-                    "Address4,NFT-1,100",
-                    "Address4,NFT-1,200",
-                    "Address1,NFT-2,300"
-                }
             }
         };
 
