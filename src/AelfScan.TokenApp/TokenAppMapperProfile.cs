@@ -48,7 +48,15 @@ public class TokenAppMapperProfile : Profile
                     s.IssueChainId == 0 ? null : ChainHelper.ConvertChainIdToBase58(s.IssueChainId)))
             .ForMember(d => d.FromChainId,
                 opt => opt.MapFrom(s => s.FromChainId == 0 ? null : ChainHelper.ConvertChainIdToBase58(s.FromChainId)));
-        CreateMap<TransferInfo, TransferInfoDto>();
+        CreateMap<TransferInfo, TransferInfoDto>()
+            .ForMember(d => d.ExtraProperties,
+                opt => opt.MapFrom(s => s.ExtraProperties == null
+                    ? new List<ExtraProperty>()
+                    : s.ExtraProperties.Select(o => new ExtraProperty
+                    {
+                        Key = o.Key,
+                        Value = o.Value
+                    }).ToList()));
         CreateMap<Issued, TransferInfo>();
         CreateMap<Burned, TransferInfo>();
 

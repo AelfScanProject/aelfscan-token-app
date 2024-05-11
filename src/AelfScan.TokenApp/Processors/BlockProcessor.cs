@@ -106,7 +106,8 @@ public class BlockProcessor : BlockProcessorBase
                 Decimals = tokenFromChain.Decimals,
                 TokenName = tokenFromChain.TokenName,
                 Type = TokenSymbolHelper.GetSymbolType(symbol),
-                CollectionSymbol = TokenSymbolHelper.GetCollectionSymbol(symbol)
+                CollectionSymbol = TokenSymbolHelper.GetCollectionSymbol(symbol),
+                ExternalInfo = tokenFromChain.ExternalInfo?.Value?.ToDictionary(o => o.Key, o => o.Value)
             };
             await SaveEntityAsync(token);
         }

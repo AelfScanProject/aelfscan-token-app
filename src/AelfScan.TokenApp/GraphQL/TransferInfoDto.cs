@@ -17,8 +17,16 @@ public class TransferInfoDto : AeFinderEntityDto
     public string IssueChainId { get; set; }
     public long ParentChainHeight { get; set; }
     public string TransferTransactionId { get; set; }
+    public string Status { get; set; }
+    public List<ExtraProperty> ExtraProperties { get; set; } = new();
 }
 
+public class ExtraProperty
+{
+    public string Key { get; set; }
+    public string Value { get; set; }
+}
+ 
 public class TransferInfoPageResultDto
 {
     public long TotalCount { get; set; }
