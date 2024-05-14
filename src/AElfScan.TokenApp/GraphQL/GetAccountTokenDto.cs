@@ -14,4 +14,6 @@ public class GetAccountTokenDto : PagedResultQueryDto
     public List<SymbolType> Types { get; set; } = new();
     
     public List<string> Symbols { get; set; } = new();
+    
+    public List<string> SearchSymbols { get; set; } = new();
 }

@@ -149,6 +149,14 @@ public class Query
             queryable = queryable.Where(predicate);
         }
         
+        if (!input.SearchSymbols.IsNullOrEmpty())
+        { 
+            var predicates = input.SearchSymbols.Select(s => 
+                (Expression<Func<AccountToken, bool>>)(o => o.Token.Symbol == s || o.Token.CollectionSymbol == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);
