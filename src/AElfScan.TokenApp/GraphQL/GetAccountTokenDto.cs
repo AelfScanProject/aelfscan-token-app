@@ -12,4 +12,6 @@ public class GetAccountTokenDto : PagedResultQueryDto
     
     public string PartialSymbol { get; set; }
     public List<SymbolType> Types { get; set; } = new();
+    
+    public List<string> Symbols { get; set; } = new();
 }

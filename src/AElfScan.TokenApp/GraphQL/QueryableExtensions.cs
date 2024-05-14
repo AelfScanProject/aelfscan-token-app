@@ -65,6 +65,11 @@ public class QueryableExtensions
 
         switch (input.OrderBy)
         {
+            case "Symbol":
+                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
+                    queryable.OrderBy(o => o.Token.Symbol) :
+                    queryable.OrderByDescending(o => o.Token.Symbol);
+                break;
             case "BlockTime":
                 sortedQueryable = input.Sort == SortType.Asc.ToString() ?
                     queryable.OrderBy(o => o.Metadata.Block.BlockTime) :

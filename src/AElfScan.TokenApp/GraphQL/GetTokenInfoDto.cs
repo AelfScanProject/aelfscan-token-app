@@ -17,4 +17,6 @@ public class GetTokenInfoDto : PagedResultQueryDto
     public List<SymbolType> Types { get; set; } = new();
 
     public List<string> CollectionSymbols { get; set; } = new();
+    
+    public string Search { get; set; } = "";
 }

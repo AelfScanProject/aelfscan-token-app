@@ -63,6 +63,12 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);        
         }
+        
+        if (!input.Search.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.Symbol.Contains(input.Search) || o.TokenName.Contains(input.Search));
+        }
+        
         //add order by
         queryable = QueryableExtensions.TokenInfoSort(queryable, input);
         var totalCount = await QueryableExtensions.CountAsync(queryable);
@@ -133,6 +139,14 @@ public class Query
                 (Expression<Func<AccountToken, bool>>)(o => o.Token.Type == s));
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);        
+        }
+        
+        if (!input.Symbols.IsNullOrEmpty())
+        { 
+            var predicates = input.Symbols.Select(s => 
+                (Expression<Func<AccountToken, bool>>)(o => o.Token.Symbol == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
         }
         
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
