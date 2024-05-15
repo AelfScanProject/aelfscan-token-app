@@ -9,6 +9,10 @@ public class AccountInfoDto : AeFinderEntityDto
     public long TransferCount { get; set; }
 }
 
+public class AccountCountDto
+{
+    public int Count { get; set; }
+}
 
 public class AccountInfoPageResultDto
 {

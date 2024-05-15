@@ -7,7 +7,7 @@ using Xunit;
 
 namespace AElfScan.TokenApp.Processors;
 
-public class CrossChainReceivedProcessorTests: TokenContractAppTestBase
+public class CrossChainReceivedProcessorTests : TokenContractAppTestBase
 {
     private readonly CrossChainReceivedProcessor _crossChainReceivedProcessor;
 
@@ -20,7 +20,7 @@ public class CrossChainReceivedProcessorTests: TokenContractAppTestBase
     public async Task HandleEvent_Test()
     {
         await CreateTokenAsync();
-
+        
         var @event = new CrossChainReceived
         {
             Amount = 1,
@@ -36,16 +36,16 @@ public class CrossChainReceivedProcessorTests: TokenContractAppTestBase
         var logEventContext = GenerateLogEventContext(@event);
         await _crossChainReceivedProcessor.ProcessAsync(logEventContext);
         await SaveDataAsync();
-        
+
         var token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {
             ChainId = ChainId,
-            Symbols = new List<string>() { @event.Symbol}
+            Symbols = new List<string>() { @event.Symbol }
         });
         token.Items[0].Supply.ShouldBe(101);
         token.Items[0].TransferCount.ShouldBe(2);
         token.Items[0].HolderCount.ShouldBe(2);
-        
+
         var transfer = await Query.TransferInfo(TransferInfoReadOnlyRepository, ObjectMapper, new GetTransferDto
         {
             ChainId = ChainId,
@@ -66,6 +66,13 @@ public class CrossChainReceivedProcessorTests: TokenContractAppTestBase
         transfer.Items[0].ParentChainHeight.ShouldBe(@event.ParentChainHeight);
         transfer.Items[0].TransferTransactionId.ShouldBe(@event.TransferTransactionId.ToHex());
         
+        var count = await Query.AccountCount(AccountInfoReadOnlyRepository, new GetAccountCountDto()
+        {
+            ChainId = ChainId,
+        });
+        
+        count.Count.ShouldBe(2);
+        
         var account = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
             ChainId = ChainId,
@@ -74,7 +81,7 @@ public class CrossChainReceivedProcessorTests: TokenContractAppTestBase
         account[0].TransferCount.ShouldBe(1);
         account[0].TokenHoldingCount.ShouldBe(1);
 
-        var accountToken = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
+        var accountToken = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper, new GetAccountTokenDto
         {
             ChainId = ChainId,
             Address = @event.To.ToBase58(),
