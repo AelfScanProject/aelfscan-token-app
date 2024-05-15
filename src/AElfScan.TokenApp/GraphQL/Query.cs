@@ -175,6 +175,11 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
+        
+        if (!input.Search.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.Token.Symbol == input.Search || o.Address == input.Search);
+        }
 
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
 
