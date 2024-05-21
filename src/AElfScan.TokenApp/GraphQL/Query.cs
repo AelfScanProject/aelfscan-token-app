@@ -70,6 +70,11 @@ public class Query
         {
             queryable = queryable.Where(o => o.Symbol.Contains(input.Search) || o.TokenName.Contains(input.Search));
         }
+        
+        if (!input.LowerCaseSearch.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.LowerCaseSymbol.Contains(input.LowerCaseSearch));
+        }
 
         //add order by
         queryable = QueryableExtensions.TokenInfoSort(queryable, input);
@@ -180,6 +185,12 @@ public class Query
         {
             queryable = queryable.Where(o => o.Token.Symbol == input.Search || o.Address == input.Search);
         }
+        
+        if (!input.LowerCaseSearch.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.Token.LowerCaseSymbol.Contains(input.LowerCaseSearch) 
+                                             || o.LowerCaseAddress.Contains(input.LowerCaseSearch));
+        }
 
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
 
@@ -241,6 +252,14 @@ public class Query
             queryable = queryable.Where(o => o.TransactionId == input.Search || o.From == input.Search ||
                                              o.To == input.Search
                                              || o.Token.Symbol == input.Search);
+        }
+        
+        if (!input.LowerCaseSearch.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.TransactionId.Contains(input.LowerCaseSearch) ||
+                                             o.LowerCaseFrom.Contains(input.LowerCaseSearch) ||
+                                             o.LowerCaseTo.Contains(input.LowerCaseSearch)
+                                             || o.Token.LowerCaseSymbol.Contains(input.LowerCaseSearch));
         }
 
         if (!input.Types.IsNullOrEmpty())

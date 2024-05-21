@@ -7,7 +7,6 @@ public class GetTokenInfoDto : PagedResultQueryDto
     public string ChainId { get; set; }
     
     public string Symbol { get; set; }
-
     public List<string> Symbols { get; set; } = new();
     public string PartialSymbol { get; set; }
     public string TokenName { get; set; }
@@ -19,4 +18,7 @@ public class GetTokenInfoDto : PagedResultQueryDto
     public List<string> CollectionSymbols { get; set; } = new();
     
     public string Search { get; set; } = "";
+    
+    //support symbol
+    public string LowerCaseSearch { get; set; } = "";
 }

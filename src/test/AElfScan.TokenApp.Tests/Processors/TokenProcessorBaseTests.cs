@@ -16,9 +16,9 @@ public class TokenProcessorBaseTests: TokenContractAppTestBase
     public async Task GetContractAddressTest()
     {
         var contractAddress = _transferredProcessor.GetContractAddress(ChainId);
-        contractAddress.ShouldBe("AELFTokenContractAddress");
+        contractAddress.ShouldBe("JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE");
         
         contractAddress = _transferredProcessor.GetContractAddress("tDVV");
-        contractAddress.ShouldBe("tDVVTokenContractAddress");
+        contractAddress.ShouldBe("7RzVGiuVWkvL4VfVHdZfQF2Tri3sgLe9U991bohHFfSRZXuGX");
     }
 }

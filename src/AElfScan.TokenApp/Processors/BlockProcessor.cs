@@ -55,6 +55,7 @@ public class BlockProcessor : BlockProcessorBase
                     Id = id,
                     Token = _objectMapper.Map<Entities.TokenInfo,TokenBase>(token),
                     Address = address,
+                    LowerCaseAddress = address.ToLower()
                 };
             }
 
@@ -103,6 +104,7 @@ public class BlockProcessor : BlockProcessorBase
                 Supply = tokenFromChain.Supply,
                 TotalSupply = tokenFromChain.TotalSupply,
                 Symbol = symbol,
+                LowerCaseSymbol = symbol.ToLower(),
                 Decimals = tokenFromChain.Decimals,
                 TokenName = tokenFromChain.TokenName,
                 Type = TokenSymbolHelper.GetSymbolType(symbol),

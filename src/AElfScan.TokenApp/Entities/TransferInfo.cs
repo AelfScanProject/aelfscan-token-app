@@ -7,7 +7,9 @@ public class TransferInfo : AeFinderEntity, IAeFinderEntity
 {
     [Keyword] public string TransactionId { get; set; }
     [Keyword] public string From { get; set; }
+    [Keyword] public string LowerCaseFrom{ get; set; }
     [Keyword] public string To { get; set; }
+    [Keyword] public string LowerCaseTo{ get; set; }
     [Keyword] public string Method { get; set; }
     public long Amount { get; set; }
     public decimal FormatAmount { get; set; }

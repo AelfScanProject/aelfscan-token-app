@@ -17,4 +17,7 @@ public class GetTransferDto : PagedResultQueryDto
     public List<SymbolType> Types { get; set; } = new();
     
     public string Search { get; set; } = "";
+    
+    //support txId, address, symbol
+    public string LowerCaseSearch { get; set; } = "";
 }

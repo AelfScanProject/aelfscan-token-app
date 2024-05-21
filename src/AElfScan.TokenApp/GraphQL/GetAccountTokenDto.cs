@@ -18,4 +18,7 @@ public class GetAccountTokenDto : PagedResultQueryDto
     public List<string> SearchSymbols { get; set; } = new();
     
     public string Search { get; set; } = "";
+    
+    //support txId, address, symbol
+    public string LowerCaseSearch { get; set; } = "";
 }

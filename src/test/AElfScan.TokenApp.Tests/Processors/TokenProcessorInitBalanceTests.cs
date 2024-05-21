@@ -15,7 +15,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         
         TokenAppConstants.StartProcessBalanceEventHeight = new Dictionary<string, long>
         {
-            { "AELF", 1000 }
+            { "AELF", 200000111 }
         };
     }
 
