@@ -125,6 +125,25 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
         await _appDataIndexManagerProvider.SavaDataAsync();
         await _appBlockStateSetProvider.SetBestChainBlockStateSetAsync(ChainId, BlockHash);
     }
+    
+    
+    protected async Task<Entities.TokenInfo> GetTokenAsync(string chainId, string symbol)
+    {
+        var tokenId = IdGenerateHelper.GetId(chainId, symbol);
+        return await TokenRepository.GetAsync(tokenId);
+    }
+    
+    protected async Task<AccountInfo> GetAccountInfoAsync(string chainId, string address)
+    {
+        var accountId = IdGenerateHelper.GetId(chainId, address);
+        return await AccountInfoRepository.GetAsync(accountId);
+    }
+    
+    protected async Task<AccountToken> GetAccountTokenAsync(string chainId, string address, string symbol)
+    {
+        var accountTokenId = IdGenerateHelper.GetId(chainId, address, symbol);
+        return await AccountTokenRepository.GetAsync(accountTokenId);
+    }
 
     protected async Task CreateTokenAsync()
     {

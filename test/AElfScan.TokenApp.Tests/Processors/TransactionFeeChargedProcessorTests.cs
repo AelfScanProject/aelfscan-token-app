@@ -25,17 +25,17 @@ public class TransactionFeeChargedProcessorTests: TokenContractAppTestBase
             Symbol = "ELF",
             ChargingAddress = TestAddress
         };
+        
+        //before
+        var accountTokenBefore = await GetAccountTokenAsync(ChainId, TestAddress.ToBase58(), @event.Symbol);
+        
         var logEventContext = GenerateLogEventContext(@event);
         await _transactionFeeChargedProcessor.ProcessAsync(logEventContext);
         await SaveDataAsync();
-
-        var accountToken = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
-        {
-            ChainId = ChainId,
-            Address = TestAddress.ToBase58(),
-            Symbol = "ELF"
-        });
-        accountToken.Items[0].Amount.ShouldBe(99);
-        accountToken.Items[0].FormatAmount.ShouldBe(0.00000099m);
+        
+        //check
+        var accountToken = await GetAccountTokenAsync(ChainId, TestAddress.ToBase58(), @event.Symbol);
+        (accountTokenBefore.Amount - accountToken.Amount).ShouldBe(1);
+        (accountTokenBefore.FormatAmount - accountToken.FormatAmount).ShouldBe(0.00000001m);
     }
 }
