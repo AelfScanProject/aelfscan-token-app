@@ -39,22 +39,11 @@ jobs:
       - name: Build
         run: dotnet build --no-restore /clp:ErrorsOnly /p:GeneratePackageOnBuild=false --verbosity quiet
 
-      - name: Run tests and capture results
-        id: run-tests
+      - name: Test
         run: |
-          mkdir -p test-results
-          for name in `ls ./test/*.Tests/*.csproj | awk '{print $NF}'`; do
-            dotnet test ${name} --no-restore --no-build --logger "trx;LogFileName=test-results/${name}.trx" --settings CodeCoverage.runsettings --results-directory coverage --collect:"XPlat Code Coverage" || echo "FAILED: ${name}" >> test-results/failed-tests.txt
-          done
-
-      - name: Retry failed tests
-        if: failure() && steps.run-tests.outputs.failed-tests != ''
-        run: |
-          for name in `cat test-results/failed-tests.txt`; do
-            for i in {1..3}; do
-              echo "Retrying ${name}, attempt $i"
-              dotnet test ${name} --no-restore --no-build --logger "trx;LogFileName=test-results/${name}.retry$i.trx" --settings CodeCoverage.runsettings --results-directory coverage --collect:"XPlat Code Coverage" && break || echo "Retry ${i} failed for ${name}"
-            done
+          for name in `ls ./test/*.Tests/*.csproj | awk '{print $NF}'`;
+          do
+              dotnet test ${name} --no-restore --no-build --logger trx --settings CodeCoverage.runsettings --results-directory coverage --collect:"XPlat Code Coverage" 
           done
 
       - name: Upload coverage reports to Codecov
