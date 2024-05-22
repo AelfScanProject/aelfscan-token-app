@@ -1,4 +1,3 @@
-using AElfScan.TokenApp.GraphQL;
 using AElf.Contracts.MultiToken;
 using Shouldly;
 using Xunit;

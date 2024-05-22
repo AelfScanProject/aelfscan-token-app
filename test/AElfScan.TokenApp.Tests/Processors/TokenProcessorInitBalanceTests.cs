@@ -12,11 +12,6 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
     public TokenProcessorInitBalanceTests()
     {
         _transferredProcessor = GetRequiredService<TransferredProcessor>();
-        
-        TokenAppConstants.StartProcessBalanceEventHeight = new Dictionary<string, long>
-        {
-            { "AELF", 200000111 }
-        };
     }
 
     [Fact]
@@ -34,9 +29,21 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             To = Address.FromBase58("2XDRhxzMbaYRCTe3NxRpARkBpjfQpyWdBKscQpc3Tph3m6dqHG"),
             Memo = "memo"
         };
+        
+        TokenAppConstants.StartProcessBalanceEventHeight = new Dictionary<string, long>
+        {
+            { "AELF", 200000111 }
+        };
+        
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
         await SaveDataAsync();
+        
+        //modify back
+        TokenAppConstants.StartProcessBalanceEventHeight = new Dictionary<string, long>
+        {
+            { "AELF", BlockHeight }
+        };
         
         var tokenNftPage = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {
@@ -44,7 +51,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Symbol = transferred.Symbol
         });
         var tokenNft = tokenNftPage.Items;
-        tokenNft[0].HolderCount.ShouldBe(0);
+        tokenNft[0].HolderCount.ShouldBe(1);
         tokenNft[0].TransferCount.ShouldBe(2);
         
         var tokenCollection = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
@@ -52,7 +59,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             ChainId = ChainId,
             Symbol = collectionSymbol
         });
-        tokenCollection.Items[0].HolderCount.ShouldBe(0);
+        tokenCollection.Items[0].HolderCount.ShouldBe(1);
         tokenCollection.Items[0].TransferCount.ShouldBe(3);
         
         var accountFrom = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
@@ -61,7 +68,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Address = TestAddress.ToBase58()
         });
         accountFrom[0].TransferCount.ShouldBe(3);
-        accountFrom[0].TokenHoldingCount.ShouldBe(0);
+        accountFrom[0].TokenHoldingCount.ShouldBe(2);
         
         var accountTo = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -80,8 +87,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         accountNftTokenFrom.Items[0].TransferCount.ShouldBe(2);
         accountNftTokenFrom.Items[0].FirstNftTransactionId.ShouldBe(TransactionId);
         accountNftTokenFrom.Items[0].FirstNftTime.ShouldNotBeNull();
-        accountNftTokenFrom.Items[0].Amount.ShouldBe(0);
-        accountNftTokenFrom.Items[0].FormatAmount.ShouldBe(0);
+        accountNftTokenFrom.Items[0].Amount.ShouldBe(100);
+        accountNftTokenFrom.Items[0].FormatAmount.ShouldBe(100);
         
         var accountCollectionTokenFrom = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
@@ -92,8 +99,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         accountCollectionTokenFrom.Items[0].TransferCount.ShouldBe(3);
         accountCollectionTokenFrom.Items[0].FirstNftTransactionId.ShouldBeNull();
         accountCollectionTokenFrom.Items[0].FirstNftTime.ShouldBeNull();
-        accountCollectionTokenFrom.Items[0].Amount.ShouldBe(0);
-        accountCollectionTokenFrom.Items[0].FormatAmount.ShouldBe(0);
+        accountCollectionTokenFrom.Items[0].Amount.ShouldBe(100);
+        accountCollectionTokenFrom.Items[0].FormatAmount.ShouldBe(100);
 
         var accountNftTokenTo = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
