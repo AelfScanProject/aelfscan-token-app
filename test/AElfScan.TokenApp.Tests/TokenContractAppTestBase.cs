@@ -37,8 +37,9 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
     protected readonly IReadOnlyRepository<AccountToken> AccountTokenReadOnlyRepository;
     protected readonly IReadOnlyRepository<Entities.TokenInfo> TokenInfoReadOnlyRepository;
     protected readonly IReadOnlyRepository<TransferInfo> TransferInfoReadOnlyRepository;
+    protected readonly IReadOnlyRepository<BlockBurnFeeInfo> BlockBurnFeeInfoReadOnlyRepository;
     
-    protected Address TestAddress = Address.FromBase58("ooCSxQ7zPw1d4rhQPBqGKB6myvuWbicCiw3jdcoWEMMpa54ea");
+    protected Address TestAddress = Address.FromBase58("SietKh9cArYub9ox6E4rU94LrzPad6TB72rCwe3X1jQ5m1C34");
     protected string ChainId = "AELF";
     protected string BlockHash = "dac5cd67a2783d0a3d843426c2d45f1178f4d052235a907a0d796ae4659103b1";
     protected string PreviousBlockHash = "e38c4fb1cf6af05878657cb3f7b5fc8a5fcfb2eec19cd76b73abb831973fbf4e";
@@ -63,7 +64,7 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
         AccountTokenReadOnlyRepository = GetRequiredService<IReadOnlyRepository<AccountToken>>();
         TokenInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<Entities.TokenInfo>>();
         TransferInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<TransferInfo>>();
-
+        BlockBurnFeeInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<BlockBurnFeeInfo>>();
         AsyncHelper.RunSync(async () => await InitializeBlockStateSetAsync());
     }
 
@@ -91,7 +92,6 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
     protected LogEventContext GenerateLogEventContext<T>(T eventData) where T : IEvent<T>
     {
         var logEvent = eventData.ToLogEvent().ToSdkLogEvent();
-        
         return new LogEventContext
         {
             ChainId = ChainId,
@@ -117,6 +117,7 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
                 } 
             },
             LogEvent = logEvent
+            
         };
     }
 
