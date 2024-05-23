@@ -123,5 +123,13 @@ public class IssuedAndBurnedProcessorTests : TokenContractAppTestBase
         transfer.Items[1].IssueChainId.ShouldBeNull();
         transfer.Items[1].ParentChainHeight.ShouldBe(0);
         transfer.Items[1].TransferTransactionId.ShouldBeNull();
+        
+        var blockBurnFeeListDto = await Query.BlockBurnFeeInfo(BlockBurnFeeInfoReadOnlyRepository, ObjectMapper, new GetBlockBurnFeeDto()
+        {
+            ChainId = logEventContext.ChainId,
+            BeginBlockHeight =BlockHeight,
+            EndBlockHeight = BlockHeight + 1
+        });
+        blockBurnFeeListDto.Items.Count.ShouldBe(1);
     }
 }

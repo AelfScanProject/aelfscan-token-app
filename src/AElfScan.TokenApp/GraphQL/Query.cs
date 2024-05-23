@@ -282,4 +282,26 @@ public class Query
             Items = objectMapper.Map<List<TransferInfo>, List<TransferInfoDto>>(result)
         };
     }
+
+    public static async Task<BlockBurnFeeListDto> BlockBurnFeeInfo(
+        [FromServices] IReadOnlyRepository<BlockBurnFeeInfo> repository,
+        [FromServices] IObjectMapper objectMapper, GetBlockBurnFeeDto input)
+    {
+        var queryable = await repository.GetQueryableAsync();
+        var rangeLimit = 100;
+        if(input.EndBlockHeight > input.BeginBlockHeight + rangeLimit)
+        {
+            throw new ArgumentOutOfRangeException(
+                $"Max block range limit for block height is {rangeLimit}.");
+        }
+        queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
+        queryable = queryable.Where(o => o.BlockHeight >= input.BeginBlockHeight);
+        queryable = queryable.Where(o => o.BlockHeight <= input.EndBlockHeight);
+        queryable = queryable.Where(o => o.Symbol == TokenAppConstants.BaseTokenSymbol);
+        var result = queryable.ToList();
+        return new BlockBurnFeeListDto
+        {
+            Items = objectMapper.Map<List<BlockBurnFeeInfo>, List<BlockBurnFeeDto>>(result)
+        };
+    }
 }
