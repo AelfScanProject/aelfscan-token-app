@@ -1,4 +1,3 @@
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using AeFinder.Sdk;
 using AElfScan.TokenApp.Entities;
@@ -71,11 +70,17 @@ public class Query
             queryable = queryable.Where(o => o.Symbol.Contains(input.Search) || o.TokenName.Contains(input.Search));
         }
         
-        if (!input.LowerCaseSearch.IsNullOrWhiteSpace())
+        if (!input.ExactSearch.IsNullOrWhiteSpace())
         {
-            queryable = queryable.Where(o => o.LowerCaseSymbol.Contains(input.LowerCaseSearch));
+            queryable = queryable.Where(o => o.Symbol == input.ExactSearch || o.TokenName == input.ExactSearch);
         }
-
+        
+        if (!input.FuzzySearch.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.LowerCaseSymbol.Contains(input.FuzzySearch)
+                                             || o.LowerCaseTokenName.Contains(input.FuzzySearch));
+        }
+        
         //add order by
         queryable = QueryableExtensions.TokenInfoSort(queryable, input);
         var totalCount = await QueryableExtensions.CountAsync(queryable);
@@ -186,10 +191,10 @@ public class Query
             queryable = queryable.Where(o => o.Token.Symbol == input.Search || o.Address == input.Search);
         }
         
-        if (!input.LowerCaseSearch.IsNullOrWhiteSpace())
+        if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
-            queryable = queryable.Where(o => o.Token.LowerCaseSymbol.Contains(input.LowerCaseSearch) 
-                                             || o.LowerCaseAddress.Contains(input.LowerCaseSearch));
+            queryable = queryable.Where(o => o.Token.LowerCaseSymbol.Contains(input.FuzzySearch) 
+                                             || o.LowerCaseAddress.Contains(input.FuzzySearch));
         }
 
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
@@ -254,12 +259,12 @@ public class Query
                                              || o.Token.Symbol == input.Search);
         }
         
-        if (!input.LowerCaseSearch.IsNullOrWhiteSpace())
+        if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
-            queryable = queryable.Where(o => o.TransactionId.Contains(input.LowerCaseSearch) ||
-                                             o.LowerCaseFrom.Contains(input.LowerCaseSearch) ||
-                                             o.LowerCaseTo.Contains(input.LowerCaseSearch)
-                                             || o.Token.LowerCaseSymbol.Contains(input.LowerCaseSearch));
+            queryable = queryable.Where(o => o.TransactionId.Contains(input.FuzzySearch) ||
+                                             o.LowerCaseFrom.Contains(input.FuzzySearch) ||
+                                             o.LowerCaseTo.Contains(input.FuzzySearch)
+                                             || o.Token.LowerCaseSymbol.Contains(input.FuzzySearch));
         }
 
         if (!input.Types.IsNullOrEmpty())

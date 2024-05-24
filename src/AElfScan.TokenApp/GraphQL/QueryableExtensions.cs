@@ -21,6 +21,11 @@ public class QueryableExtensions
                     queryable.OrderBy(o => o.Metadata.Block.BlockTime) :
                     queryable.OrderByDescending(o => o.Metadata.Block.BlockTime);
                 break;
+            case "BlockHeight":
+                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
+                queryable.OrderBy(o => o.Metadata.Block.BlockHeight) :
+                queryable.OrderByDescending(o => o.Metadata.Block.BlockHeight);
+                break;
             case "HolderCount":
                 sortedQueryable = input.Sort == SortType.Asc.ToString() ?
                     queryable.OrderBy(o => o.HolderCount) :
@@ -33,6 +38,10 @@ public class QueryableExtensions
                 break;
             default:
                 break;
+        }
+        if (!input.SearchAfter.IsNullOrWhiteSpace())
+        {
+            sortedQueryable.After(new object[] { input.SearchAfter });
         }
         return sortedQueryable;
     }
@@ -48,6 +57,11 @@ public class QueryableExtensions
                     queryable.OrderBy(o => o.Metadata.Block.BlockTime) :
                     queryable.OrderByDescending(o => o.Metadata.Block.BlockTime);
                 break;
+            case "BlockHeight":
+                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
+                    queryable.OrderBy(o => o.Metadata.Block.BlockHeight) :
+                    queryable.OrderByDescending(o => o.Metadata.Block.BlockHeight);
+                break;
             case "FormatAmount":
                 sortedQueryable = input.Sort == SortType.Asc.ToString() ?
                     queryable.OrderBy(o => o.FormatAmount) :
@@ -55,6 +69,10 @@ public class QueryableExtensions
                 break;
             default:
                 break;
+        }
+        if (!input.SearchAfter.IsNullOrWhiteSpace())
+        {
+            sortedQueryable.After(new object[] { input.SearchAfter });
         }
         return sortedQueryable;
     }
@@ -75,6 +93,11 @@ public class QueryableExtensions
                     queryable.OrderBy(o => o.Metadata.Block.BlockTime) :
                     queryable.OrderByDescending(o => o.Metadata.Block.BlockTime);
                 break;
+            case "BlockHeight":
+                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
+                    queryable.OrderBy(o => o.Metadata.Block.BlockHeight) :
+                    queryable.OrderByDescending(o => o.Metadata.Block.BlockHeight);
+                break;
             case "FormatAmount":
                 sortedQueryable = input.Sort == SortType.Asc.ToString() ?
                     queryable.OrderBy(o => o.FormatAmount) :
@@ -87,6 +110,10 @@ public class QueryableExtensions
                 break;
             default:
                 break;
+        }
+        if (!input.SearchAfter.IsNullOrWhiteSpace())
+        {
+            sortedQueryable.After(new object[] { input.SearchAfter });
         }
         return sortedQueryable;
     }

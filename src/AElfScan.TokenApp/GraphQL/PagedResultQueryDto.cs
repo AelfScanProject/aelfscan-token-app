@@ -10,7 +10,9 @@ public class PagedResultQueryDto
     public string OrderBy { get; set; }
     
     public string Sort { get; set; }
-
+    
+    public string SearchAfter { get; set; }
+    
     public virtual void Validate()
     {
         if (MaxResultCount > MaxMaxResultCount)

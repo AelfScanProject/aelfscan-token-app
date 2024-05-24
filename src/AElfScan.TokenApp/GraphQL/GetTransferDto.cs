@@ -19,5 +19,5 @@ public class GetTransferDto : PagedResultQueryDto
     public string Search { get; set; } = "";
     
     //support txId, address, symbol
-    public string LowerCaseSearch { get; set; } = "";
+    public string FuzzySearch { get; set; } = "";
 }

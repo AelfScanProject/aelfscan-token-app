@@ -6,7 +6,7 @@ namespace AElfScan.TokenApp.Entities;
 public class TokenInfo : TokenBase, IAeFinderEntity
 {
     [Keyword] public string TokenName { get; set; }
-    [Keyword] public string NormalizedTokenName { get; set; }
+    [Keyword] public string LowerCaseTokenName { get; set; }
     public long TotalSupply { get; set; }
     public long Supply { get; set; }
     public long Issued { get; set; }

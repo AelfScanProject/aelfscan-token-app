@@ -28,7 +28,7 @@ public class TokenCreatedProcessor : TokenProcessorBase<TokenCreated>
 
         if (!token.TokenName.IsNullOrWhiteSpace())
         {
-            token.NormalizedTokenName = token.TokenName.ToUpper();
+            token.LowerCaseTokenName = token.TokenName.ToLower();
         }
 
         await SaveEntityAsync(token);
