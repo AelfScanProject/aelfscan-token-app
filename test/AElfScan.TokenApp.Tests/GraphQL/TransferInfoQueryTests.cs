@@ -79,6 +79,17 @@ public class TransferInfoQueryTests : TokenContractAppTestBase
         {
             Address = TestAddress.ToBase58(),
             SkipCount = 0,
+            MaxResultCount = 100,
+            OrderBy = "BlockHeight",
+            Sort = "Asc",
+            SearchAfter = "200000001"
+        });
+        list.Items.Count.ShouldBe(0);
+        
+        list = await Query.TransferInfo(TransferInfoReadOnlyRepository, ObjectMapper, new GetTransferDto()
+        {
+            Address = TestAddress.ToBase58(),
+            SkipCount = 0,
             MaxResultCount = 100
         });
         list.Items.Count.ShouldBe(4);

@@ -41,7 +41,7 @@ public class QueryableExtensions
         }
         if (!input.SearchAfter.IsNullOrWhiteSpace())
         {
-            sortedQueryable.After(new object[] { input.SearchAfter });
+            sortedQueryable = sortedQueryable.After(new object[] { input.SearchAfter });
         }
         return sortedQueryable;
     }
@@ -72,7 +72,7 @@ public class QueryableExtensions
         }
         if (!input.SearchAfter.IsNullOrWhiteSpace())
         {
-            sortedQueryable.After(new object[] { input.SearchAfter });
+            sortedQueryable = sortedQueryable.After(new object[] { input.SearchAfter });
         }
         return sortedQueryable;
     }
@@ -113,7 +113,7 @@ public class QueryableExtensions
         }
         if (!input.SearchAfter.IsNullOrWhiteSpace())
         {
-            sortedQueryable.After(new object[] { input.SearchAfter });
+            sortedQueryable = sortedQueryable.After(new object[] { input.SearchAfter });
         }
         return sortedQueryable;
     }
