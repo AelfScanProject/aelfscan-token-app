@@ -107,6 +107,9 @@ public class BlockProcessor : BlockProcessorBase
                 LowerCaseSymbol = symbol.ToLower(),
                 Decimals = tokenFromChain.Decimals,
                 TokenName = tokenFromChain.TokenName,
+                LowerCaseTokenName = tokenFromChain.TokenName.ToLower(),
+                Issuer = tokenFromChain.Issuer?.ToBase58(),
+                Owner = tokenFromChain.Owner?.ToBase58(),
                 Type = TokenSymbolHelper.GetSymbolType(symbol),
                 CollectionSymbol = TokenSymbolHelper.GetCollectionSymbol(symbol),
                 ExternalInfo = tokenFromChain.ExternalInfo?.Value?.ToDictionary(o => o.Key, o => o.Value)

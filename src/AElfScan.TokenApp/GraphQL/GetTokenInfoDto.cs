@@ -19,6 +19,7 @@ public class GetTokenInfoDto : PagedResultQueryDto
     
     public string Search { get; set; } = "";
     
-    //support symbol
-    public string LowerCaseSearch { get; set; } = "";
+    public string ExactSearch { get; set; } = "";
+    
+    public string FuzzySearch { get; set; } = "";
 }

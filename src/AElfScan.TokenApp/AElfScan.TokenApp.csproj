@@ -5,9 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>AElfScan.TokenApp</RootNamespace>
     </PropertyGroup>
-
     <ItemGroup>
-        <PackageReference Include="AeFinder.Sdk" Version="0.0.2" />
-        <PackageReference Include="AElf.EntityMapping.Elasticsearch" Version="1.0.0-rc9.5" />
+        <PackageReference Include="AeFinder.Sdk" Version="0.0.4" />
     </ItemGroup>
 </Project>

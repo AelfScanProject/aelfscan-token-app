@@ -28,10 +28,10 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
     protected readonly IssuedProcessor IssuedProcessor;
     protected readonly IObjectMapper ObjectMapper;
     
-    protected IEntityRepository<Entities.TokenInfo> TokenRepository;
-    protected IEntityRepository<AccountToken> AccountTokenRepository;
-    protected IEntityRepository<AccountInfo> AccountInfoRepository;
-    protected IEntityRepository<TransferInfo> TransferInfoRepository;
+    protected IRepository<Entities.TokenInfo> TokenRepository;
+    protected IRepository<AccountToken> AccountTokenRepository;
+    protected IRepository<AccountInfo> AccountInfoRepository;
+    protected IRepository<TransferInfo> TransferInfoRepository;
     
     protected readonly IReadOnlyRepository<AccountInfo> AccountInfoReadOnlyRepository;
     protected readonly IReadOnlyRepository<AccountToken> AccountTokenReadOnlyRepository;
@@ -56,10 +56,10 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
         TokenCreatedProcessor = GetRequiredService<TokenCreatedProcessor>();
         IssuedProcessor = GetRequiredService<IssuedProcessor>();
         ObjectMapper = GetRequiredService<IObjectMapper>();
-        TokenRepository = GetRequiredService<IEntityRepository<Entities.TokenInfo>>();
-        AccountTokenRepository = GetRequiredService<IEntityRepository<AccountToken>>();
-        AccountInfoRepository = GetRequiredService<IEntityRepository<AccountInfo>>();
-        TransferInfoRepository = GetRequiredService<IEntityRepository<TransferInfo>>();
+        TokenRepository = GetRequiredService<IRepository<Entities.TokenInfo>>();
+        AccountTokenRepository = GetRequiredService<IRepository<AccountToken>>();
+        AccountInfoRepository = GetRequiredService<IRepository<AccountInfo>>();
+        TransferInfoRepository = GetRequiredService<IRepository<TransferInfo>>();
         AccountInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<AccountInfo>>();
         AccountTokenReadOnlyRepository = GetRequiredService<IReadOnlyRepository<AccountToken>>();
         TokenInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<Entities.TokenInfo>>();
