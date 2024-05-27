@@ -1,4 +1,4 @@
-
+using System.Linq.Expressions;
 using AElfScan.TokenApp.Entities;
 
 namespace AElfScan.TokenApp.GraphQL;
@@ -12,109 +12,89 @@ public class QueryableExtensions
     
     public static IQueryable<TokenInfo> TokenInfoSort(IQueryable<TokenInfo> queryable, GetTokenInfoDto input)
     {
-        var sortedQueryable = queryable;
-
-        switch (input.OrderBy)
-        {
-            case "BlockTime":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.Metadata.Block.BlockTime) :
-                    queryable.OrderByDescending(o => o.Metadata.Block.BlockTime);
-                break;
-            case "BlockHeight":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                queryable.OrderBy(o => o.Metadata.Block.BlockHeight) :
-                queryable.OrderByDescending(o => o.Metadata.Block.BlockHeight);
-                break;
-            case "HolderCount":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.HolderCount) :
-                    queryable.OrderByDescending(o => o.HolderCount);
-                break;
-            case "TransferCount":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.TransferCount) :
-                    queryable.OrderByDescending(o => o.TransferCount);
-                break;
-            default:
-                break;
-        }
-        if (!input.SearchAfter.IsNullOrWhiteSpace())
-        {
-            sortedQueryable = sortedQueryable.After(new object[] { input.SearchAfter });
-        }
-        return sortedQueryable;
+        return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
     }
-    
+
     public static IQueryable<TransferInfo> TransferInfoSort(IQueryable<TransferInfo> queryable, GetTransferDto input)
     {
-        var sortedQueryable = queryable;
-
-        switch (input.OrderBy)
-        {
-            case "BlockTime":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.Metadata.Block.BlockTime) :
-                    queryable.OrderByDescending(o => o.Metadata.Block.BlockTime);
-                break;
-            case "BlockHeight":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.Metadata.Block.BlockHeight) :
-                    queryable.OrderByDescending(o => o.Metadata.Block.BlockHeight);
-                break;
-            case "FormatAmount":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.FormatAmount) :
-                    queryable.OrderByDescending(o => o.FormatAmount);
-                break;
-            default:
-                break;
-        }
-        if (!input.SearchAfter.IsNullOrWhiteSpace())
-        {
-            sortedQueryable = sortedQueryable.After(new object[] { input.SearchAfter });
-        }
-        return sortedQueryable;
+        return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
     }
-    
-    public static IQueryable<AccountToken> AccountTokenSort(IQueryable<AccountToken> queryable, GetAccountTokenDto input)
-    {
-        var sortedQueryable = queryable;
 
-        switch (input.OrderBy)
+    public static IQueryable<AccountToken> AccountTokenSort(IQueryable<AccountToken> queryable,
+        GetAccountTokenDto input)
+    {
+        return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
+    }
+
+    private static IQueryable<T> ApplySortingAndPaging<T>(IQueryable<T> queryable, List<OrderInfo> orderInfos,
+        List<string> searchAfter)
+    {
+        if (!orderInfos.IsNullOrEmpty())
         {
-            case "Symbol":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.Token.Symbol) :
-                    queryable.OrderByDescending(o => o.Token.Symbol);
+            foreach (var orderInfo in orderInfos)
+            {
+                queryable = AddSort(queryable, orderInfo.OrderBy, orderInfo.Sort);
+            }
+        }
+
+        if (searchAfter != null && searchAfter.Any())
+        {
+            queryable = queryable.After(searchAfter.Cast<object>().ToArray());
+        }
+
+        return queryable;
+    }
+
+    private static IQueryable<T> AddSort<T>(IQueryable<T> queryable, string orderBy, string sort)
+    {
+        var parameter = Expression.Parameter(typeof(T), "o");
+        Expression property = null;
+        switch (orderBy)
+        {
+            case "Id":
+                property = GetNestedPropertyExpression(parameter, "Id");
                 break;
             case "BlockTime":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.Metadata.Block.BlockTime) :
-                    queryable.OrderByDescending(o => o.Metadata.Block.BlockTime);
+                property = GetNestedPropertyExpression(parameter, "Metadata.Block.BlockTime");
                 break;
             case "BlockHeight":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.Metadata.Block.BlockHeight) :
-                    queryable.OrderByDescending(o => o.Metadata.Block.BlockHeight);
+                property = GetNestedPropertyExpression(parameter, "Metadata.Block.BlockHeight");
                 break;
-            case "FormatAmount":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.FormatAmount) :
-                    queryable.OrderByDescending(o => o.FormatAmount);
+            case "HolderCount":
+                property = GetNestedPropertyExpression(parameter, "HolderCount");
                 break;
             case "TransferCount":
-                sortedQueryable = input.Sort == SortType.Asc.ToString() ?
-                    queryable.OrderBy(o => o.TransferCount) :
-                    queryable.OrderByDescending(o => o.TransferCount);
+                property = GetNestedPropertyExpression(parameter, "TransferCount");
+                break;
+            case "Symbol":
+                property = GetNestedPropertyExpression(parameter, "Token.Symbol");
+                break;
+            case "FormatAmount":
+                property = GetNestedPropertyExpression(parameter, "FormatAmount");
+                break;
+            case "Address":
+                property = GetNestedPropertyExpression(parameter, "Address");
                 break;
             default:
-                break;
+                throw new Exception("Invalid order by field");
         }
-        if (!input.SearchAfter.IsNullOrWhiteSpace())
+
+        var lambda = Expression.Lambda(property, parameter);
+        string methodName = sort == SortType.Asc.ToString() ? "OrderBy" : "OrderByDescending";
+        var resultExpression = Expression.Call(typeof(Queryable), methodName, new Type[] { typeof(T), property.Type },
+            queryable.Expression, Expression.Quote(lambda));
+
+        return queryable.Provider.CreateQuery<T>(resultExpression);
+    }
+    
+    private static Expression GetNestedPropertyExpression(Expression parameter, string propertyPath)
+    {
+        var properties = propertyPath.Split('.');
+        Expression property = parameter;
+        foreach (var prop in properties)
         {
-            sortedQueryable = sortedQueryable.After(new object[] { input.SearchAfter });
+            property = Expression.Property(property, prop);
         }
-        return sortedQueryable;
+        return property;
     }
 }
