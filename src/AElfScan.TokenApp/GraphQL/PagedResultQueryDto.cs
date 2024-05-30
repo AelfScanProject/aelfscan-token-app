@@ -7,7 +7,7 @@ public class PagedResultQueryDto : OrderInfo
     public int SkipCount { get; set; } = 0;
     public int MaxResultCount { get; set; } = DefaultMaxResultCount;
 
-    public List<OrderInfo> OrderInfos;
+    public List<OrderInfo> OrderInfos { get; set; }
     public List<string> SearchAfter { get; set; }
     
     public virtual void Validate()
