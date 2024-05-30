@@ -75,6 +75,9 @@ public class QueryableExtensions
             case "Address":
                 property = GetNestedPropertyExpression(parameter, "Address");
                 break;
+            case "TransactionId":
+                property = GetNestedPropertyExpression(parameter, "TransactionId");
+                break;
             default:
                 throw new Exception("Invalid order by field");
         }

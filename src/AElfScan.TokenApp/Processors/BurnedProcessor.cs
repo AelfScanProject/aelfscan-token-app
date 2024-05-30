@@ -17,11 +17,13 @@ public class BurnedProcessor : TokenProcessorBase<Burned>
         transfer.Method = "Burn";
         transfer.Token = ObjectMapper.Map<Entities.TokenInfo, TokenBase>(token);
         transfer.From = logEvent.Burner.ToBase58();
-        await AddTransferAsync(transfer, context);
-
+        if (context.Transaction.MethodName != "CrossChainTransfer")
+        {
+            await AddTransferAsync(transfer, context);
+            await IncreaseTokenInfoTransferCountAsync(context, logEvent.Symbol);
+            await IncreaseAccountTransferCountAsync(context, logEvent.Burner.ToBase58(), logEvent.Symbol);
+        }
         await ModifyBalanceAsync(context, logEvent.Symbol, logEvent.Burner.ToBase58(), -logEvent.Amount);
-        await IncreaseTokenInfoTransferCountAsync(context, logEvent.Symbol);
-        await IncreaseAccountTransferCountAsync(context, logEvent.Burner.ToBase58(), logEvent.Symbol);
         await SaveBurnFeeAsync(context, logEvent);
     }
 

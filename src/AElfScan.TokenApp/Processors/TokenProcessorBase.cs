@@ -140,7 +140,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
     private async Task RecordFirstNftInfoAsync(LogEventContext context, string symbol, string address)
     {
         var token = await GetTokenAsync(context.ChainId, symbol);
-        if (token.Type != SymbolType.Nft)
+        if (token?.Type != SymbolType.Nft)
             return;
 
         var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
