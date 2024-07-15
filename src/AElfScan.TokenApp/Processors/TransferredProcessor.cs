@@ -1,3 +1,4 @@
+using AeFinder.Sdk.Logging;
 using AeFinder.Sdk.Processor;
 using AElfScan.TokenApp.Entities;
 using AElf.Contracts.MultiToken;
@@ -8,8 +9,14 @@ public class TransferredProcessor : TokenProcessorBase<Transferred>
 {
     public override async Task ProcessAsync(Transferred logEvent, LogEventContext context)
     {
+        Logger.LogError($"start TransferredProcessor ProcessAsync:{context.Transaction.TransactionId}");
         var token = await GetTokenAsync(context.ChainId, logEvent.Symbol);
-        
+        if (token == null)
+        {
+            Logger.LogError($"start TransferredProcessor ProcessAsync symbol:{logEvent.Symbol} token is null" );
+
+        }
+
         var transfer = new TransferInfo();
         ObjectMapper.Map(logEvent, transfer);
         transfer.Method = "Transfer";
