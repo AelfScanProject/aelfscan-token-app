@@ -1,6 +1,8 @@
+using AeFinder.Sdk.Logging;
 using AeFinder.Sdk.Processor;
 using AElfScan.TokenApp.Entities;
 using AElf.CSharp.Core;
+using AElfScan.TokenApp.Helper;
 using Volo.Abp.ObjectMapping;
 
 namespace AElfScan.TokenApp.Processors;
@@ -8,8 +10,9 @@ namespace AElfScan.TokenApp.Processors;
 public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent> where TEvent : IEvent<TEvent>, new()
 {
     protected IObjectMapper ObjectMapper => LazyServiceProvider.LazyGetRequiredService<IObjectMapper>();
-    
+
     public ITokenContractAddressProvider ContractAddressProvider { get; set; }
+
 
     public override string GetContractAddress(string chainId)
     {
@@ -21,13 +24,13 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         var tokenId = IdGenerateHelper.GetId(chainId, symbol);
         return await GetEntityAsync<TokenInfo>(tokenId);
     }
-    
+
     protected async Task<AccountInfo> GetAccountInfoAsync(string chainId, string address)
     {
         var accountId = IdGenerateHelper.GetId(chainId, address);
         return await GetEntityAsync<AccountInfo>(accountId);
     }
-    
+
     protected async Task<AccountToken> GetAccountTokenAsync(string chainId, string address, string symbol)
     {
         var accountTokenId = IdGenerateHelper.GetId(chainId, address, symbol);
@@ -45,6 +48,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
             await IncreaseTokenInfoTransferCountAsync(context, token.CollectionSymbol);
         }
     }
+
     protected async Task IncreaseAccountTokenTransferCountAsync(LogEventContext context, string address, string symbol)
     {
         var accountToken = await GetAccountTokenAsync(context.ChainId, address, symbol);
@@ -55,7 +59,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
             {
                 Id = IdGenerateHelper.GetId(context.ChainId, address, symbol),
                 Address = address,
-                Token = ObjectMapper.Map<TokenInfo,TokenBase>(token)
+                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token)
             };
         }
 
@@ -68,7 +72,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
 
         await SaveEntityAsync(accountToken);
     }
-    
+
     protected async Task IncreaseAccountTransferCountAsync(LogEventContext context, string address)
     {
         var accountInfo = await GetAccountInfoAsync(context.ChainId, address);
@@ -84,14 +88,15 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         accountInfo.TransferCount += 1;
         await SaveEntityAsync(accountInfo);
     }
-    
+
     protected async Task IncreaseAccountTransferCountAsync(LogEventContext context, string address, string symbol)
     {
         await IncreaseAccountTokenTransferCountAsync(context, address, symbol);
         await IncreaseAccountTransferCountAsync(context, address);
     }
 
-    protected async Task ChangeTokenInfoHolderCountAsync(LogEventContext context, string symbol, long changeValue, bool ignoreCollection = true)
+    protected async Task ChangeTokenInfoHolderCountAsync(LogEventContext context, string symbol, long changeValue,
+        bool ignoreCollection = true)
     {
         var token = await GetTokenAsync(context.ChainId, symbol);
         if (ignoreCollection && token.Type == SymbolType.NftCollection)
@@ -101,13 +106,13 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
 
         token.HolderCount += changeValue;
         await SaveEntityAsync(token);
-        
+
         if (token.Type == SymbolType.Nft)
         {
             await ChangeTokenInfoHolderCountAsync(context, token.CollectionSymbol, changeValue, false);
         }
     }
-    
+
     protected async Task ChangeAccountHoldingCountAsync(LogEventContext context, string address, long changeValue)
     {
         var accountInfo = await GetAccountInfoAsync(context.ChainId, address);
@@ -123,16 +128,41 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         accountInfo.TokenHoldingCount += changeValue;
         await SaveEntityAsync(accountInfo);
     }
-    
+
     protected async Task ModifyBalanceAsync(LogEventContext context, string symbol, string address, long amount)
     {
         await RecordFirstNftInfoAsync(context, symbol, address);
-        
+
+        var beforeDate = DateTimeHelper.GetBeforeDate(context.Block.BlockTime);
+        if (TokenAppConstants.InitialBalanceEndHeight.TryGetValue(context.ChainId, out var h) &&
+            context.Block.BlockHeight > h)
+        {
+            var id = IdGenerateHelper.GetId(context.ChainId, beforeDate);
+            var beforeData = await GetEntityAsync<DailyHolderInfo>(id);
+            var token = await GetTokenAsync(context.ChainId, "ELF");
+            if (beforeData == null && token != null)
+            {
+                var dailyHolder = new DailyHolderInfo()
+                {
+                    Id = id,
+                    ChainId = context.ChainId,
+                    Count = token.HolderCount,
+                    DateStr = beforeDate
+                };
+                Logger.LogInformation("Add daily holder:chainId:{c},date:{d},count:{c}", context.ChainId, beforeDate,
+                    token.HolderCount);
+
+                await SaveEntityAsync(dailyHolder);
+            }
+        }
+
+
         if (TokenAppConstants.StartProcessBalanceEventHeight.TryGetValue(context.ChainId, out var height) &&
             context.Block.BlockHeight < height)
         {
             return;
         }
+
 
         await ModifyBalanceAndChangeHoldingCountAsync(context, symbol, address, amount);
     }
@@ -178,7 +208,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
             {
                 Id = accountTokenId,
                 Address = address,
-                Token = ObjectMapper.Map<TokenInfo,TokenBase>(token),
+                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
                 Amount = amount
             };
         }
@@ -195,11 +225,11 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         switch (originalBalance)
         {
             case > 0 when accountToken.Amount == 0:
-                await ChangeAccountHoldingCountAsync(context,address, -1);
+                await ChangeAccountHoldingCountAsync(context, address, -1);
                 await ChangeTokenInfoHolderCountAsync(context, symbol, -1);
                 break;
             case 0 when accountToken.Amount > 0:
-                await ChangeAccountHoldingCountAsync(context,address, 1);
+                await ChangeAccountHoldingCountAsync(context, address, 1);
                 await ChangeTokenInfoHolderCountAsync(context, symbol, 1);
                 break;
         }
