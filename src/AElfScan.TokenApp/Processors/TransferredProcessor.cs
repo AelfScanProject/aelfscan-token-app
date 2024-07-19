@@ -42,7 +42,7 @@ public class TransferredProcessor : TokenProcessorBase<Transferred>
                 Decimals = tokenInfo.Decimals,
                 TokenName = tokenInfo.TokenName,
                 TotalSupply = tokenInfo.TotalSupply,
-                Supply = 0,
+                Supply = logEvent.Amount,
                 Issued = tokenInfo.Issued,
                 Issuer = tokenInfo.Issuer?.ToBase58(),
                 Owner = tokenInfo.Owner?.ToBase58(),
@@ -61,7 +61,6 @@ public class TransferredProcessor : TokenProcessorBase<Transferred>
                 token.LowerCaseTokenName = token.TokenName.ToLower();
             }
         }
-        token.Supply += logEvent.Amount;
         await SaveEntityAsync(token);
         
 
