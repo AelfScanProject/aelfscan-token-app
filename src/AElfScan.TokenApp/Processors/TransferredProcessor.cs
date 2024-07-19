@@ -1,21 +1,69 @@
+using AeFinder.Sdk;
 using AeFinder.Sdk.Logging;
 using AeFinder.Sdk.Processor;
 using AElfScan.TokenApp.Entities;
 using AElf.Contracts.MultiToken;
+using AutoMapper.Internal.Mappers;
 
 namespace AElfScan.TokenApp.Processors;
 
 public class TransferredProcessor : TokenProcessorBase<Transferred>
 {
+    private readonly IBlockChainService _blockChainService;
+    public TransferredProcessor(IBlockChainService blockChainService)
+    {
+        _blockChainService = blockChainService;
+    }
     public override async Task ProcessAsync(Transferred logEvent, LogEventContext context)
     {
-        Logger.LogError($"start TransferredProcessor ProcessAsync:{context.Transaction.TransactionId}");
         var token = await GetTokenAsync(context.ChainId, logEvent.Symbol);
         if (token == null)
         {
             Logger.LogError($"start TransferredProcessor ProcessAsync symbol:{logEvent.Symbol} token is null" );
+            var tokenInfo =  await _blockChainService.ViewContractAsync<AElf.Contracts.MultiToken.TokenInfo>(
+                context.ChainId, GetContractAddress(context.ChainId),
+                "GetTokenInfo", new GetTokenInfoInput
+                {
+                    Symbol = logEvent.Symbol
+                });
+            if (tokenInfo.Decimals != 0 || tokenInfo.TotalSupply != 1)
+            {
+                return;
+            }
 
+            token = new Entities.TokenInfo
+            {
+                Id = IdGenerateHelper.GetId(context.ChainId,
+                    logEvent.Symbol),
+                Type = TokenSymbolHelper.GetSymbolType(logEvent.Symbol),
+                CollectionSymbol = TokenSymbolHelper.GetCollectionSymbol(logEvent.Symbol),
+                Symbol = tokenInfo.Symbol,
+                LowerCaseSymbol = tokenInfo.Symbol.ToLower(),
+                Decimals = tokenInfo.Decimals,
+                TokenName = tokenInfo.TokenName,
+                TotalSupply = tokenInfo.TotalSupply,
+                Supply = 0,
+                Issued = tokenInfo.Issued,
+                Issuer = tokenInfo.Issuer?.ToBase58(),
+                Owner = tokenInfo.Owner?.ToBase58(),
+                IsBurnable = tokenInfo.IsBurnable,
+                IssueChainId = tokenInfo.IssueChainId.ToString(),
+                ExternalInfo = tokenInfo.ExternalInfo?.Value?.ToDictionary(o => o.Key, o => o.Value)
+            };
+          
+            if (token.Owner.IsNullOrWhiteSpace())
+            {
+                token.Owner = token.Issuer;
+            }
+
+            if (!token.TokenName.IsNullOrWhiteSpace())
+            {
+                token.LowerCaseTokenName = token.TokenName.ToLower();
+            }
         }
+        token.Supply += logEvent.Amount;
+        await SaveEntityAsync(token);
+        
 
         var transfer = new TransferInfo();
         ObjectMapper.Map(logEvent, transfer);
