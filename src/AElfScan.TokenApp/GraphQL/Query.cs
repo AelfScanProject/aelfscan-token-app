@@ -69,18 +69,18 @@ public class Query
         {
             queryable = queryable.Where(o => o.Symbol.Contains(input.Search) || o.TokenName.Contains(input.Search));
         }
-        
+
         if (!input.ExactSearch.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Symbol == input.ExactSearch || o.TokenName == input.ExactSearch);
         }
-        
+
         if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.LowerCaseSymbol.Contains(input.FuzzySearch)
                                              || o.LowerCaseTokenName.Contains(input.FuzzySearch));
         }
-        
+
         //add order by
         queryable = QueryableExtensions.TokenInfoSort(queryable, input);
         var totalCount = await QueryableExtensions.CountAsync(queryable);
@@ -115,6 +115,23 @@ public class Query
         var result = queryable.Skip(input.SkipCount)
             .Take(input.MaxResultCount).ToList();
         return objectMapper.Map<List<AccountInfo>, List<AccountInfoDto>>(result);
+    }
+
+
+    public static async Task<List<DailyHolderDto>> DailyHolder(
+        [FromServices] IReadOnlyRepository<DailyHolderInfo> repository,
+        [FromServices] IObjectMapper objectMapper, GetDailyHolderDto input)
+    {
+        var queryable = await repository.GetQueryableAsync();
+
+        if (!input.ChainId.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.ChainId == input.ChainId);
+        }
+
+
+        var result = queryable.Take(10000).ToList();
+        return objectMapper.Map<List<DailyHolderInfo>, List<DailyHolderDto>>(result);
     }
 
 
@@ -185,15 +202,15 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
-        
+
         if (!input.Search.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Token.Symbol == input.Search || o.Address == input.Search);
         }
-        
+
         if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
-            queryable = queryable.Where(o => o.Token.LowerCaseSymbol.Contains(input.FuzzySearch) 
+            queryable = queryable.Where(o => o.Token.LowerCaseSymbol.Contains(input.FuzzySearch)
                                              || o.LowerCaseAddress.Contains(input.FuzzySearch));
         }
 
@@ -258,7 +275,7 @@ public class Query
                                              o.To == input.Search
                                              || o.Token.Symbol == input.Search);
         }
-        
+
         if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.TransactionId.Contains(input.FuzzySearch) ||
@@ -294,11 +311,12 @@ public class Query
     {
         var queryable = await repository.GetQueryableAsync();
         var rangeLimit = 100;
-        if(input.EndBlockHeight > input.BeginBlockHeight + rangeLimit)
+        if (input.EndBlockHeight > input.BeginBlockHeight + rangeLimit)
         {
             throw new ArgumentOutOfRangeException(
                 $"Max block range limit for block height is {rangeLimit}.");
         }
+
         queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
         queryable = queryable.Where(o => o.BlockHeight >= input.BeginBlockHeight);
         queryable = queryable.Where(o => o.BlockHeight <= input.EndBlockHeight);

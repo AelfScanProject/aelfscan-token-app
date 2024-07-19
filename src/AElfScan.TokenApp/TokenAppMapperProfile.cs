@@ -78,6 +78,7 @@ public class TokenAppMapperProfile : IndexerMapperBase
 
         // Account Info
         CreateMap<AccountInfo, AccountInfoDto>();
+        CreateMap<DailyHolderInfo, DailyHolderDto>();
         CreateMap<BlockBurnFeeInfo, BlockBurnFeeDto>();
     }
 }
