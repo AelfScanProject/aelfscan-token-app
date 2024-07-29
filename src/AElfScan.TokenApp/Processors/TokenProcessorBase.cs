@@ -59,7 +59,8 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
             {
                 Id = IdGenerateHelper.GetId(context.ChainId, address, symbol),
                 Address = address,
-                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token)
+                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
+                LowerCaseAddress = address.ToLower()
             };
         }
 
@@ -182,6 +183,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 Id = accountTokenId,
                 Address = address,
                 Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
+                LowerCaseAddress = address.ToLower()
             };
         }
 
@@ -209,6 +211,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 Id = accountTokenId,
                 Address = address,
                 Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
+                LowerCaseAddress = address.ToLower(),
                 Amount = amount
             };
         }
