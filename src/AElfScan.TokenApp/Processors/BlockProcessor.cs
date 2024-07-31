@@ -101,7 +101,7 @@ public class BlockProcessor : BlockProcessorBase
             token = new Entities.TokenInfo
             {
                 Id = tokenId,
-                Supply = tokenFromChain.Supply,
+                Supply = 0,
                 TotalSupply = tokenFromChain.TotalSupply,
                 Symbol = symbol,
                 LowerCaseSymbol = symbol.ToLower(),
