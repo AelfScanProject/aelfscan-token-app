@@ -12,6 +12,7 @@ public class IssuedProcessor : TokenProcessorBase<Issued>
         token.Supply += logEvent.Amount;
         token.Issued += logEvent.Amount;
         await SaveEntityAsync(token);
+        await ChangeCollectionItemCountAsync(context, token, logEvent.Amount);
         
         var transfer = new TransferInfo();
         ObjectMapper.Map(logEvent, transfer);

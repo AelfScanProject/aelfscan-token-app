@@ -18,4 +18,6 @@ public class TokenInfo : TokenBase, IAeFinderEntity
     public Dictionary<string, string> ExternalInfo { get; set; } = new();
     public long HolderCount { get; set; }
     public long TransferCount { get; set; }
+    
+    public decimal ItemCount { get; set; }
 }

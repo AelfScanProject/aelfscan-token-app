@@ -57,7 +57,8 @@ public class CrossChainReceivedProcessor : TokenProcessorBase<CrossChainReceived
         }
         token.Supply += logEvent.Amount;
         await SaveEntityAsync(token);
-        
+        await ChangeCollectionItemCountAsync(context, token, logEvent.Amount);
+
         var transfer = new TransferInfo();
         ObjectMapper.Map(logEvent, transfer);
         transfer.Method = "CrossChainReceive";

@@ -60,15 +60,23 @@ public class BlockProcessor : BlockProcessorBase
             }
 
             var firstInitAccountToken = accountToken.Amount == 0;
+            var changeAmount = amount - accountToken.Amount;
 
             accountToken.Amount = amount;
             accountToken.FormatAmount = accountToken.Amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
             
             await SaveEntityAsync(accountToken);
-
+            if (token.Type == SymbolType.Nft)
+            {
+                await  ChangeCollectionBalanceAndChangeHoldingCountAsync(context,TokenSymbolHelper.GetCollectionSymbol(symbol),address,changeAmount);
+            }
             if (!firstInitAccountToken) 
                 continue;
             
+            if(token.Type == SymbolType.NftCollection)
+            {
+                continue;
+            }
             await IncreaseHolderCountAsync(context, token);
             var accountId = IdGenerateHelper.GetId(context.ChainId, address);
             var accountInfo = await GetEntityAsync<AccountInfo>(accountId);
@@ -84,6 +92,40 @@ public class BlockProcessor : BlockProcessorBase
             accountInfo.TokenHoldingCount += 1;
             await SaveEntityAsync(accountInfo);
         }
+    }
+    
+    private async Task ChangeCollectionBalanceAndChangeHoldingCountAsync(BlockContext context, string symbol, string address,
+        long amount)
+    {
+
+        decimal originalBalance = 0;
+        var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
+        var accountToken = await GetEntityAsync<AccountCollection>(accountTokenId);
+        var token = await GetTokenAsync(context, symbol);
+        if (accountToken == null)
+        {
+            accountToken = new AccountCollection()
+            {
+                Id = accountTokenId,
+                Address = address,
+                Token = _objectMapper.Map<TokenInfo, TokenBase>(token),
+                LowerCaseAddress = address.ToLower(),
+                FormatAmount = amount / (decimal)Math.Pow(10, token.Decimals)
+            };
+        }
+        else
+        {
+            originalBalance = accountToken.FormatAmount;
+            accountToken.FormatAmount += amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
+        }
+        await SaveEntityAsync(accountToken);
+        switch (originalBalance)
+        {
+            case 0 when accountToken.FormatAmount > 0:
+                await IncreaseHolderCountAsync(context, token);
+                break;
+        }
+        
     }
     
     private async Task<Entities.TokenInfo> GetTokenAsync(BlockContext context, string symbol)
@@ -122,18 +164,7 @@ public class BlockProcessor : BlockProcessorBase
 
     protected async Task IncreaseHolderCountAsync(BlockContext context, Entities.TokenInfo tokenInfo, bool ignoreCollection = true)
     {
-        if (ignoreCollection && tokenInfo.Type == SymbolType.NftCollection)
-        {
-            return;
-        }
-
         tokenInfo.HolderCount += 1;
         await SaveEntityAsync(tokenInfo);
-        
-        if (tokenInfo.Type == SymbolType.Nft)
-        {
-            var tokenCollection = await GetTokenAsync(context, tokenInfo.CollectionSymbol);
-            await IncreaseHolderCountAsync(context, tokenCollection, false);
-        }
     }
 }

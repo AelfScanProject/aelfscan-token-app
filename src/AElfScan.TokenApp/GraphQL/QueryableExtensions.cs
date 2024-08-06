@@ -25,6 +25,12 @@ public class QueryableExtensions
     {
         return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
     }
+    
+    public static IQueryable<AccountCollection> AccountCollectionSort(IQueryable<AccountCollection> queryable,
+        GetAccountCollectionDto input)
+    {
+        return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
+    }
 
     private static IQueryable<T> ApplySortingAndPaging<T>(IQueryable<T> queryable, List<OrderInfo> orderInfos,
         List<string> searchAfter)
