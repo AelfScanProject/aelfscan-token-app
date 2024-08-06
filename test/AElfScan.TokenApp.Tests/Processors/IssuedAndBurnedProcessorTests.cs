@@ -65,7 +65,11 @@ public class IssuedAndBurnedProcessorTests : TokenContractAppTestBase
         transfer.Items[0].IssueChainId.ShouldBeNull();
         transfer.Items[0].ParentChainHeight.ShouldBe(0);
         transfer.Items[0].TransferTransactionId.ShouldBeNull();
-        
+        var dailyHolder = await   Query.DailyHolder(DailyHolderInfoReadOnlyRepository, ObjectMapper, new GetDailyHolderDto
+        {
+            ChainId = ChainId
+        });
+        dailyHolder.Count.ShouldBeGreaterThan(0);
         var burned = new Burned
         {
             Amount = 10,

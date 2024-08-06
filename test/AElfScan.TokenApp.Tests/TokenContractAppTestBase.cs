@@ -38,6 +38,7 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
     protected readonly IReadOnlyRepository<Entities.TokenInfo> TokenInfoReadOnlyRepository;
     protected readonly IReadOnlyRepository<TransferInfo> TransferInfoReadOnlyRepository;
     protected readonly IReadOnlyRepository<BlockBurnFeeInfo> BlockBurnFeeInfoReadOnlyRepository;
+    protected readonly IReadOnlyRepository<DailyHolderInfo> DailyHolderInfoReadOnlyRepository;
     
     protected Address TestAddress = Address.FromBase58("SietKh9cArYub9ox6E4rU94LrzPad6TB72rCwe3X1jQ5m1C34");
     protected string ChainId = "AELF";
@@ -65,6 +66,7 @@ public abstract class TokenContractAppTestBase: AElfScanTokenAppOrleansTestBase<
         TokenInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<Entities.TokenInfo>>();
         TransferInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<TransferInfo>>();
         BlockBurnFeeInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<BlockBurnFeeInfo>>();
+        DailyHolderInfoReadOnlyRepository = GetRequiredService<IReadOnlyRepository<DailyHolderInfo>>();
         AsyncHelper.RunSync(async () => await InitializeBlockStateSetAsync());
     }
 

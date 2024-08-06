@@ -275,9 +275,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Address = transferred.To.ToBase58(),
             Symbol = collectionSymbol
         });
-        accountCollectionTokenTo.Items[0].TransferCount.ShouldBe(1);
-        accountCollectionTokenTo.Items[0].FirstNftTransactionId.ShouldBeNull();
-        accountCollectionTokenTo.Items[0].FirstNftTime.ShouldBeNull();
+        accountCollectionTokenTo.Items.ShouldBeEmpty();
     }
     
     [Fact]
@@ -328,9 +326,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Address = TestAddress.ToBase58(),
             Symbol = "ELF"
         });
-        accountTokenFrom.Items[0].Amount.ShouldBe(0);
-        accountTokenFrom.Items[0].FormatAmount.ShouldBe(0);
-        accountTokenFrom.Items[0].TransferCount.ShouldBe(2);
+        accountTokenFrom.Items.ShouldBeEmpty();
         
         var accountTokenTo = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {

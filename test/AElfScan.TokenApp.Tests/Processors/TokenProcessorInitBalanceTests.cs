@@ -108,11 +108,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Address = transferred.To.ToBase58(),
             Symbol = transferred.Symbol
         });
-        accountNftTokenTo.Items[0].TransferCount.ShouldBe(1);
-        accountNftTokenTo.Items[0].FirstNftTransactionId.ShouldBe(TransactionId);
-        accountNftTokenTo.Items[0].FirstNftTime.ShouldBe(logEventContext.Block.BlockTime);
-        accountNftTokenTo.Items[0].Amount.ShouldBe(0);
-        accountNftTokenTo.Items[0].FormatAmount.ShouldBe(0);
+        accountNftTokenTo.Items.ShouldBeEmpty();
         
         var accountCollectionTokenTo = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
@@ -120,10 +116,6 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Address = transferred.To.ToBase58(),
             Symbol = collectionSymbol
         });
-        accountCollectionTokenTo.Items[0].TransferCount.ShouldBe(1);
-        accountCollectionTokenTo.Items[0].FirstNftTransactionId.ShouldBeNull();
-        accountCollectionTokenTo.Items[0].FirstNftTime.ShouldBeNull();
-        accountCollectionTokenTo.Items[0].Amount.ShouldBe(0);
-        accountCollectionTokenTo.Items[0].FormatAmount.ShouldBe(0);
+        accountCollectionTokenTo.Items.ShouldBeEmpty();
     }
 }

@@ -67,7 +67,7 @@ public class QueryableExtensions
                 property = GetNestedPropertyExpression(parameter, "TransferCount");
                 break;
             case "Symbol":
-                property = GetNestedPropertyExpression(parameter, "Token.Symbol");
+                property = GetNestedPropertyExpression(parameter, typeof(T) != typeof(TokenInfo) ? "Token.Symbol" : "Symbol");
                 break;
             case "FormatAmount":
                 property = GetNestedPropertyExpression(parameter, "FormatAmount");

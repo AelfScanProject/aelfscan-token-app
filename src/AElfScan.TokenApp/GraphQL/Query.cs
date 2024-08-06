@@ -214,6 +214,7 @@ public class Query
                                              || o.LowerCaseAddress.Contains(input.FuzzySearch));
         }
 
+        queryable = queryable.Where(o => o.Amount > 0);
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);
