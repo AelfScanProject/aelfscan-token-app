@@ -6,8 +6,11 @@ using Volo.Abp.ObjectMapping;
 
 namespace AElfScan.TokenApp.GraphQL;
 
-public class Query
-{
+public class Query{
+    private static readonly List<string> InitSymbolList = new()
+    {
+        "ELF","SHARE","VOTE","CPU","WRITE","READ","NET","RAM","DISK","STORAGE","TRAFFIC"
+    };
     public static async Task<TokenInfoPageResultDto> TokenInfo(
         [FromServices] IReadOnlyRepository<TokenInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetTokenInfoDto input)
@@ -86,6 +89,18 @@ public class Query
         var totalCount = await QueryableExtensions.CountAsync(queryable);
         var result = queryable.Skip(input.SkipCount)
             .Take(input.MaxResultCount).ToList();
+        // not needed after resubscribing
+        if (!result.IsNullOrEmpty())
+        {
+            foreach (var token in result)
+            {
+                if (token.Metadata.ChainId != "AELF" && InitSymbolList.Contains(token.Symbol))
+                {
+                    token.Supply -= token.TotalSupply;
+                }
+            }
+        }
+
         return new TokenInfoPageResultDto
         {
             TotalCount = totalCount,

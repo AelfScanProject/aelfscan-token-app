@@ -231,12 +231,12 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         if (accountToken.Token.Type == SymbolType.Nft)
         {
           await  ChangeCollectionBalanceAndChangeHoldingCountAsync(context, TokenSymbolHelper.GetCollectionSymbol(symbol),
-                address, amount);
+                address, amount/ (decimal)Math.Pow(10, accountToken.Token.Decimals));
         }
     }
 
     private async Task ChangeCollectionBalanceAndChangeHoldingCountAsync(LogEventContext context, string symbol, string address,
-        long amount)
+        decimal amount)
     {
 
         decimal originalBalance = 0;
@@ -251,13 +251,13 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 Address = address,
                 Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
                 LowerCaseAddress = address.ToLower(),
-                FormatAmount = amount / (decimal)Math.Pow(10, token.Decimals)
+                FormatAmount = amount 
             };
         }
         else
         {
             originalBalance = accountToken.FormatAmount;
-            accountToken.FormatAmount += amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
+            accountToken.FormatAmount += amount;
         }
         await SaveEntityAsync(accountToken);
         switch (originalBalance)

@@ -68,7 +68,7 @@ public class BlockProcessor : BlockProcessorBase
             await SaveEntityAsync(accountToken);
             if (token.Type == SymbolType.Nft)
             {
-                await  ChangeCollectionBalanceAndChangeHoldingCountAsync(context,TokenSymbolHelper.GetCollectionSymbol(symbol),address,changeAmount);
+                await  ChangeCollectionBalanceAndChangeHoldingCountAsync(context,TokenSymbolHelper.GetCollectionSymbol(symbol),address,changeAmount / (decimal)Math.Pow(10, accountToken.Token.Decimals));
             }
             if (!firstInitAccountToken) 
                 continue;
@@ -95,7 +95,7 @@ public class BlockProcessor : BlockProcessorBase
     }
     
     private async Task ChangeCollectionBalanceAndChangeHoldingCountAsync(BlockContext context, string symbol, string address,
-        long amount)
+        decimal amount)
     {
 
         decimal originalBalance = 0;
@@ -110,13 +110,13 @@ public class BlockProcessor : BlockProcessorBase
                 Address = address,
                 Token = _objectMapper.Map<TokenInfo, TokenBase>(token),
                 LowerCaseAddress = address.ToLower(),
-                FormatAmount = amount / (decimal)Math.Pow(10, token.Decimals)
+                FormatAmount = amount 
             };
         }
         else
         {
             originalBalance = accountToken.FormatAmount;
-            accountToken.FormatAmount += amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
+            accountToken.FormatAmount += amount ;
         }
         await SaveEntityAsync(accountToken);
         switch (originalBalance)
@@ -129,7 +129,11 @@ public class BlockProcessor : BlockProcessorBase
     }
     
     private async Task<Entities.TokenInfo> GetTokenAsync(BlockContext context, string symbol)
+    { 
+        List<string> InitSymbolList = new()
     {
+        "ELF","SHARE","VOTE","CPU","WRITE","READ","NET","RAM","DISK","STORAGE","TRAFFIC"
+    };
         var tokenId = IdGenerateHelper.GetId(context.ChainId, symbol);
         var token = await GetEntityAsync<TokenInfo>(tokenId);
         if (token == null)
@@ -143,7 +147,7 @@ public class BlockProcessor : BlockProcessorBase
             token = new Entities.TokenInfo
             {
                 Id = tokenId,
-                Supply = 0,
+                Supply = InitSymbolList.Contains(symbol) && context.ChainId == "AELF" ? tokenFromChain.TotalSupply : 0,
                 TotalSupply = tokenFromChain.TotalSupply,
                 Symbol = symbol,
                 LowerCaseSymbol = symbol.ToLower(),
