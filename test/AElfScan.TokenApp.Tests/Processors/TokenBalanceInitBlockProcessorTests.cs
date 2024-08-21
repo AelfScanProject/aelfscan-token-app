@@ -114,12 +114,21 @@ public class TokenBalanceInitBlockProcessorTests : TokenContractAppTestBase
             SkipCount = 0,
             MaxResultCount = 100
         });
-        accounts.Count.ShouldBe(4);
+        accounts.Count.ShouldBe(3);
         
         accounts.First(o => o.Address=="Address1").TokenHoldingCount.ShouldBe(2);
         accounts.First(o => o.Address=="Address2").TokenHoldingCount.ShouldBe(1);
-        accounts.First(o => o.Address=="Address3").TokenHoldingCount.ShouldBe(1);
         accounts.First(o => o.Address=="Address4").TokenHoldingCount.ShouldBe(1);
+        
+        var accountCollections = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            SkipCount = 0,
+            MaxResultCount = 100
+        });
+        accountCollections.Items.Count.ShouldBe(2);
+        accountCollections.Items[0].FormatAmount.ShouldBe(200);
+        accountCollections.Items[1].FormatAmount.ShouldBe(300);
         
     }
 }

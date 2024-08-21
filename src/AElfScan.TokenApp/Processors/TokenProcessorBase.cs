@@ -37,41 +37,32 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         return await GetEntityAsync<AccountToken>(accountTokenId);
     }
 
-    protected async Task IncreaseTokenInfoTransferCountAsync(LogEventContext context, string symbol)
+    protected async Task IncreaseTokenInfoTransferCountAsync(LogEventContext context, string symbol, bool ignoreCollection = true)
     {
         var token = await GetTokenAsync(context.ChainId, symbol);
+        if (ignoreCollection && token.Type == SymbolType.NftCollection)
+        {
+            return;
+        }
         token.TransferCount += 1;
         await SaveEntityAsync(token);
-
         if (token.Type == SymbolType.Nft)
         {
-            await IncreaseTokenInfoTransferCountAsync(context, token.CollectionSymbol);
+            await IncreaseTokenInfoTransferCountAsync(context, token.CollectionSymbol,false);
         }
     }
 
     protected async Task IncreaseAccountTokenTransferCountAsync(LogEventContext context, string address, string symbol)
     {
-        var accountToken = await GetAccountTokenAsync(context.ChainId, address, symbol);
-        if (accountToken == null)
-        {
-            var token = await GetTokenAsync(context.ChainId, symbol);
-            accountToken = new AccountToken
-            {
-                Id = IdGenerateHelper.GetId(context.ChainId, address, symbol),
-                Address = address,
-                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
-                LowerCaseAddress = address.ToLower()
-            };
-        }
-
+        var accountToken = await GetAccountToken(context, symbol, address);
         accountToken.TransferCount += 1;
-
+        await SaveEntityAsync(accountToken);
         if (accountToken.Token.Type == SymbolType.Nft)
         {
-            await IncreaseAccountTokenTransferCountAsync(context, address, accountToken.Token.CollectionSymbol);
+            var accountCollection = await GetAccountCollection(context, accountToken.Token.CollectionSymbol, address);
+            accountCollection.TransferCount += 1;
+            await SaveEntityAsync(accountCollection);
         }
-
-        await SaveEntityAsync(accountToken);
     }
 
     protected async Task IncreaseAccountTransferCountAsync(LogEventContext context, string address)
@@ -96,22 +87,11 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         await IncreaseAccountTransferCountAsync(context, address);
     }
 
-    protected async Task ChangeTokenInfoHolderCountAsync(LogEventContext context, string symbol, long changeValue,
-        bool ignoreCollection = true)
+    protected async Task ChangeTokenInfoHolderCountAsync(LogEventContext context, string symbol, long changeValue)
     {
         var token = await GetTokenAsync(context.ChainId, symbol);
-        if (ignoreCollection && token.Type == SymbolType.NftCollection)
-        {
-            return;
-        }
-
         token.HolderCount += changeValue;
         await SaveEntityAsync(token);
-
-        if (token.Type == SymbolType.Nft)
-        {
-            await ChangeTokenInfoHolderCountAsync(context, token.CollectionSymbol, changeValue, false);
-        }
     }
 
     protected async Task ChangeAccountHoldingCountAsync(LogEventContext context, string address, long changeValue)
@@ -174,18 +154,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         if (token?.Type != SymbolType.Nft)
             return;
 
-        var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
-        var accountToken = await GetEntityAsync<AccountToken>(accountTokenId);
-        if (accountToken == null)
-        {
-            accountToken = new AccountToken
-            {
-                Id = accountTokenId,
-                Address = address,
-                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
-                LowerCaseAddress = address.ToLower()
-            };
-        }
+        var accountToken = await GetAccountToken(context, symbol, address);
 
         if (!accountToken.FirstNftTransactionId.IsNullOrWhiteSpace())
         {
@@ -197,10 +166,8 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         await SaveEntityAsync(accountToken);
     }
 
-    private async Task ModifyBalanceAndChangeHoldingCountAsync(LogEventContext context, string symbol, string address,
-        long amount)
+    protected async Task<AccountToken> GetAccountToken(LogEventContext context, string symbol, string address)
     {
-        var originalBalance = 0L;
         var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
         var accountToken = await GetEntityAsync<AccountToken>(accountTokenId);
         if (accountToken == null)
@@ -211,20 +178,45 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 Id = accountTokenId,
                 Address = address,
                 Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
-                LowerCaseAddress = address.ToLower(),
-                Amount = amount
+                LowerCaseAddress = address.ToLower()
             };
         }
-        else
+
+        return accountToken;
+    }
+    
+    protected async Task<AccountCollection> GetAccountCollection(LogEventContext context, string symbol, string address)
+    {
+        var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
+        var accountCollection = await GetEntityAsync<AccountCollection>(accountTokenId);
+        if (accountCollection == null)
         {
-            originalBalance = accountToken.Amount;
-            accountToken.Amount += amount;
+            var token = await GetTokenAsync(context.ChainId, symbol);
+            accountCollection = new AccountCollection
+            {
+                Id = accountTokenId,
+                Address = address,
+                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
+                LowerCaseAddress = address.ToLower()
+            };
         }
 
+        return accountCollection;
+    }
+
+    private async Task ModifyBalanceAndChangeHoldingCountAsync(LogEventContext context, string symbol, string address,
+        long amount)
+    {
+        var accountToken = await GetAccountToken(context, symbol, address);
+        var originalBalance = accountToken.Amount;
+        accountToken.Amount += amount;
         accountToken.FormatAmount = accountToken.Amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
 
         await SaveEntityAsync(accountToken);
-
+        if (accountToken.Token.Type == SymbolType.NftCollection)
+        {
+            return;
+        }
         switch (originalBalance)
         {
             case > 0 when accountToken.Amount == 0:
@@ -236,6 +228,48 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 await ChangeTokenInfoHolderCountAsync(context, symbol, 1);
                 break;
         }
+        if (accountToken.Token.Type == SymbolType.Nft)
+        {
+          await  ChangeCollectionBalanceAndChangeHoldingCountAsync(context, TokenSymbolHelper.GetCollectionSymbol(symbol),
+                address, amount/ (decimal)Math.Pow(10, accountToken.Token.Decimals));
+        }
+    }
+
+    private async Task ChangeCollectionBalanceAndChangeHoldingCountAsync(LogEventContext context, string symbol, string address,
+        decimal amount)
+    {
+
+        decimal originalBalance = 0;
+        var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
+        var accountToken = await GetEntityAsync<AccountCollection>(accountTokenId);
+        if (accountToken == null)
+        {
+            var token = await GetTokenAsync(context.ChainId, symbol);
+            accountToken = new AccountCollection()
+            {
+                Id = accountTokenId,
+                Address = address,
+                Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
+                LowerCaseAddress = address.ToLower(),
+                FormatAmount = amount 
+            };
+        }
+        else
+        {
+            originalBalance = accountToken.FormatAmount;
+            accountToken.FormatAmount += amount;
+        }
+        await SaveEntityAsync(accountToken);
+        switch (originalBalance)
+        {
+            case > 0 when accountToken.FormatAmount == 0:
+                await ChangeTokenInfoHolderCountAsync(context, symbol, -1);
+                break;
+            case 0 when accountToken.FormatAmount > 0:
+                await ChangeTokenInfoHolderCountAsync(context, symbol, 1);
+                break;
+        }
+        
     }
 
     protected async Task AddTransferAsync(TransferInfo transferInfo, LogEventContext context)
@@ -246,5 +280,15 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         transferInfo.ExtraProperties = context.Transaction.ExtraProperties;
         transferInfo.Status = context.Transaction.Status.ToString();
         await SaveEntityAsync(transferInfo);
+    }
+    
+    protected async Task ChangeCollectionItemCountAsync(LogEventContext context, TokenInfo tokenInfo, long changeValue)
+    {
+        if (tokenInfo.Type == SymbolType.Nft)
+        {
+            var collection = await GetTokenAsync(context.ChainId, tokenInfo.CollectionSymbol);
+            collection.ItemCount += changeValue/(decimal)Math.Pow(10, tokenInfo.Decimals);
+            await SaveEntityAsync(collection);
+        }
     }
 }

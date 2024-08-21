@@ -6,8 +6,11 @@ using Volo.Abp.ObjectMapping;
 
 namespace AElfScan.TokenApp.GraphQL;
 
-public class Query
-{
+public class Query{
+    private static readonly List<string> InitSymbolList = new()
+    {
+        "ELF","SHARE","VOTE","CPU","WRITE","READ","NET","RAM","DISK","STORAGE","TRAFFIC"
+    };
     public static async Task<TokenInfoPageResultDto> TokenInfo(
         [FromServices] IReadOnlyRepository<TokenInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetTokenInfoDto input)
@@ -86,6 +89,18 @@ public class Query
         var totalCount = await QueryableExtensions.CountAsync(queryable);
         var result = queryable.Skip(input.SkipCount)
             .Take(input.MaxResultCount).ToList();
+        // not needed after resubscribing
+        if (!result.IsNullOrEmpty())
+        {
+            foreach (var token in result)
+            {
+                if (token.Metadata.ChainId != "AELF" && InitSymbolList.Contains(token.Symbol))
+                {
+                    token.Supply -= token.TotalSupply;
+                }
+            }
+        }
+
         return new TokenInfoPageResultDto
         {
             TotalCount = totalCount,
@@ -326,6 +341,42 @@ public class Query
         return new BlockBurnFeeListDto
         {
             Items = objectMapper.Map<List<BlockBurnFeeInfo>, List<BlockBurnFeeDto>>(result)
+        };
+    }
+    
+    
+     public static async Task<AccountCollectionPageResultDto> AccountCollection(
+        [FromServices] IReadOnlyRepository<AccountCollection> repository,
+        [FromServices] IObjectMapper objectMapper, GetAccountCollectionDto input)
+    {
+        input.Validate();
+
+        var queryable = await repository.GetQueryableAsync();
+
+        if (!input.ChainId.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
+        }
+
+        if (!input.Address.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.Address == input.Address);
+        }
+
+        if (!input.Symbol.IsNullOrWhiteSpace())
+        {
+            queryable = queryable.Where(o => o.Token.Symbol == input.Symbol);
+        }
+        queryable = queryable.Where(o => o.FormatAmount > 0);
+        queryable = QueryableExtensions.AccountCollectionSort(queryable, input);
+
+        var totalCount = await QueryableExtensions.CountAsync(queryable);
+        var result = queryable.Skip(input.SkipCount)
+            .Take(input.MaxResultCount).ToList();
+        return new AccountCollectionPageResultDto()
+        {
+            TotalCount = totalCount,
+            Items = objectMapper.Map<List<AccountCollection>, List<AccountCollectionDto>>(result)
         };
     }
 }

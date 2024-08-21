@@ -129,7 +129,6 @@ public class TransferredProcessorTests: TokenContractAppTestBase
     public async Task HandleEvent_Collection_Test()
     {
         await CreateCollectionTokenAsync();
-
         var transferred = new Transferred
         {
             Amount = 1,
@@ -148,7 +147,8 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Symbol = transferred.Symbol
         });
         token.Items[0].HolderCount.ShouldBe(0);
-        token.Items[0].TransferCount.ShouldBe(2);
+        token.Items[0].TransferCount.ShouldBe(0);
+        token.Items[0].ItemCount.ShouldBe(0);
         
         var accountFrom = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -156,7 +156,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Address = TestAddress.ToBase58()
         });
         accountFrom[0].TransferCount.ShouldBe(2);
-        accountFrom[0].TokenHoldingCount.ShouldBe(1);
+        accountFrom[0].TokenHoldingCount.ShouldBe(0);
         
         var accountTo = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -164,7 +164,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Address = transferred.To.ToBase58()
         });
         accountTo[0].TransferCount.ShouldBe(1);
-        accountTo[0].TokenHoldingCount.ShouldBe(1);
+        accountTo[0].TokenHoldingCount.ShouldBe(0);
         
         var accountTokenFrom = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
@@ -185,6 +185,22 @@ public class TransferredProcessorTests: TokenContractAppTestBase
         accountTokenTo.Items[0].TransferCount.ShouldBe(1);
         accountTokenFrom.Items[0].FirstNftTransactionId.ShouldBeNull();
         accountTokenFrom.Items[0].FirstNftTime.ShouldBeNull();
+        
+        var accountCollectionFrom = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = TestAddress.ToBase58(),
+            Symbol = transferred.Symbol
+        });
+        accountCollectionFrom.Items.ShouldBeEmpty();
+        
+        var accountCollectionTo = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = transferred.To.ToBase58(),
+            Symbol = transferred.Symbol
+        });
+        accountCollectionTo.Items.ShouldBeEmpty();
     }
     
     [Fact]
@@ -221,7 +237,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Symbol = collectionSymbol
         });
         tokenCollection.Items[0].HolderCount.ShouldBe(2);
-        tokenCollection.Items[0].TransferCount.ShouldBe(3);
+        tokenCollection.Items[0].TransferCount.ShouldBe(2);
         
         var accountFrom = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -229,7 +245,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Address = TestAddress.ToBase58()
         });
         accountFrom[0].TransferCount.ShouldBe(3);
-        accountFrom[0].TokenHoldingCount.ShouldBe(2);
+        accountFrom[0].TokenHoldingCount.ShouldBe(1);
         
         var accountTo = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -255,7 +271,7 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Address = TestAddress.ToBase58(),
             Symbol = collectionSymbol
         });
-        accountCollectionTokenFrom.Items[0].TransferCount.ShouldBe(3);
+        accountCollectionTokenFrom.Items[0].TransferCount.ShouldBe(1);
         accountCollectionTokenFrom.Items[0].FirstNftTransactionId.ShouldBeNull();
         accountCollectionTokenFrom.Items[0].FirstNftTime.ShouldBeNull();
 
@@ -276,6 +292,41 @@ public class TransferredProcessorTests: TokenContractAppTestBase
             Symbol = collectionSymbol
         });
         accountCollectionTokenTo.Items.ShouldBeEmpty();
+        
+        var accountCollectionFrom1 = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = TestAddress.ToBase58(),
+            Symbol = transferred.Symbol
+        });
+        accountCollectionFrom1.Items.ShouldBeEmpty();
+        
+        var accountCollectionTo1 = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = transferred.To.ToBase58(),
+            Symbol = transferred.Symbol
+        });
+        accountCollectionTo1.Items.ShouldBeEmpty();
+
+        var accountCollectionFrom2 = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = TestAddress.ToBase58(),
+            Symbol = collectionSymbol
+        });
+        accountCollectionFrom2.Items[0].TransferCount.ShouldBe(2);
+        accountCollectionFrom2.Items[0].FormatAmount.ShouldBe(99);
+        
+        var accountCollectionTo2 = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = transferred.To.ToBase58(),
+            Symbol = collectionSymbol
+        });
+        accountCollectionTo2.Items[0].TransferCount.ShouldBe(1);
+        accountCollectionTo2.Items[0].FormatAmount.ShouldBe(1);
+
     }
     
     [Fact]

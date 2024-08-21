@@ -11,6 +11,7 @@ public class BurnedProcessor : TokenProcessorBase<Burned>
         var token = await GetTokenAsync(context.ChainId, logEvent.Symbol);
         token.Supply -= logEvent.Amount;
         await SaveEntityAsync(token);
+        await ChangeCollectionItemCountAsync(context, token, -logEvent.Amount);
 
         var transfer = new TransferInfo();
         ObjectMapper.Map(logEvent, transfer);

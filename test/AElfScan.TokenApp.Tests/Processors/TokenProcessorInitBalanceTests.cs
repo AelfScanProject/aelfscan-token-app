@@ -53,6 +53,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         var tokenNft = tokenNftPage.Items;
         tokenNft[0].HolderCount.ShouldBe(1);
         tokenNft[0].TransferCount.ShouldBe(2);
+        tokenNft[0].ItemCount.ShouldBe(0);
         
         var tokenCollection = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {
@@ -60,7 +61,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Symbol = collectionSymbol
         });
         tokenCollection.Items[0].HolderCount.ShouldBe(1);
-        tokenCollection.Items[0].TransferCount.ShouldBe(3);
+        tokenCollection.Items[0].TransferCount.ShouldBe(2);
+        tokenCollection.Items[0].ItemCount.ShouldBe(100);
         
         var accountFrom = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -68,7 +70,7 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Address = TestAddress.ToBase58()
         });
         accountFrom[0].TransferCount.ShouldBe(3);
-        accountFrom[0].TokenHoldingCount.ShouldBe(2);
+        accountFrom[0].TokenHoldingCount.ShouldBe(1);
         
         var accountTo = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto
         {
@@ -96,11 +98,20 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
             Address = TestAddress.ToBase58(),
             Symbol = collectionSymbol
         });
-        accountCollectionTokenFrom.Items[0].TransferCount.ShouldBe(3);
+        accountCollectionTokenFrom.Items[0].TransferCount.ShouldBe(1);
         accountCollectionTokenFrom.Items[0].FirstNftTransactionId.ShouldBeNull();
         accountCollectionTokenFrom.Items[0].FirstNftTime.ShouldBeNull();
-        accountCollectionTokenFrom.Items[0].Amount.ShouldBe(100);
-        accountCollectionTokenFrom.Items[0].FormatAmount.ShouldBe(100);
+        accountCollectionTokenFrom.Items[0].Amount.ShouldBe(1000);
+        accountCollectionTokenFrom.Items[0].FormatAmount.ShouldBe(1000);
+        
+        var accountCollectionTokenFrom1 = await Query.AccountCollection(AccountCollectionReadOnlyRepository, ObjectMapper,new GetAccountCollectionDto()
+        {
+            ChainId = ChainId,
+            Address = TestAddress.ToBase58(),
+            Symbol = collectionSymbol
+        });
+        accountCollectionTokenFrom1.Items[0].TransferCount.ShouldBe(2);
+        accountCollectionTokenFrom1.Items[0].FormatAmount.ShouldBe(100);
 
         var accountNftTokenTo = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
