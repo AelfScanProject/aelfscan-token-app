@@ -38,18 +38,20 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         return await GetEntityAsync<AccountToken>(accountTokenId);
     }
 
-    protected async Task IncreaseTokenInfoTransferCountAsync(LogEventContext context, string symbol, bool ignoreCollection = true)
+    protected async Task IncreaseTokenInfoTransferCountAsync(LogEventContext context, string symbol,
+        bool ignoreCollection = true)
     {
         var token = await GetTokenAsync(context.ChainId, symbol);
         if (ignoreCollection && token.Type == SymbolType.NftCollection)
         {
             return;
         }
+
         token.TransferCount += 1;
         await SaveEntityAsync(token);
         if (token.Type == SymbolType.Nft)
         {
-            await IncreaseTokenInfoTransferCountAsync(context, token.CollectionSymbol,false);
+            await IncreaseTokenInfoTransferCountAsync(context, token.CollectionSymbol, false);
         }
     }
 
@@ -131,7 +133,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                     Count = token.HolderCount,
                     DateStr = beforeDate
                 };
-                Logger.LogInformation("ModifyBalanceAsync dailyHolder:{p}",JsonConvert.SerializeObject(dailyHolder));
+                Logger.LogInformation("ModifyBalanceAsync dailyHolder:{p}", JsonConvert.SerializeObject(dailyHolder));
                 Logger.LogInformation("Add daily holder:chainId:{c},date:{d},count:{c}", context.ChainId, beforeDate,
                     token.HolderCount);
 
@@ -165,7 +167,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
 
         accountToken.FirstNftTransactionId = context.Transaction.TransactionId;
         accountToken.FirstNftTime = context.Block.BlockTime;
-        Logger.LogInformation("RecordFirstNftInfoAsync accountToken:{p}",JsonConvert.SerializeObject(accountToken));
+        Logger.LogInformation("RecordFirstNftInfoAsync accountToken:{p}", JsonConvert.SerializeObject(accountToken));
         await SaveEntityAsync(accountToken);
     }
 
@@ -187,7 +189,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
 
         return accountToken;
     }
-    
+
     protected async Task<AccountCollection> GetAccountCollection(LogEventContext context, string symbol, string address)
     {
         var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
@@ -215,11 +217,14 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         accountToken.Amount += amount;
         accountToken.FormatAmount = accountToken.Amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
 
+        Logger.LogInformation("ModifyBalanceAndChangeHoldingCountAsync accountToken:{p}",
+            JsonConvert.SerializeObject(accountToken));
         await SaveEntityAsync(accountToken);
         if (accountToken.Token.Type == SymbolType.NftCollection)
         {
             return;
         }
+
         switch (originalBalance)
         {
             case > 0 when accountToken.Amount == 0:
@@ -231,17 +236,19 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 await ChangeTokenInfoHolderCountAsync(context, symbol, 1);
                 break;
         }
+
         if (accountToken.Token.Type == SymbolType.Nft)
         {
-          await  ChangeCollectionBalanceAndChangeHoldingCountAsync(context, TokenSymbolHelper.GetCollectionSymbol(symbol),
-                address, amount/ (decimal)Math.Pow(10, accountToken.Token.Decimals));
+            await ChangeCollectionBalanceAndChangeHoldingCountAsync(context,
+                TokenSymbolHelper.GetCollectionSymbol(symbol),
+                address, amount / (decimal)Math.Pow(10, accountToken.Token.Decimals));
         }
     }
 
-    private async Task ChangeCollectionBalanceAndChangeHoldingCountAsync(LogEventContext context, string symbol, string address,
+    private async Task ChangeCollectionBalanceAndChangeHoldingCountAsync(LogEventContext context, string symbol,
+        string address,
         decimal amount)
     {
-
         decimal originalBalance = 0;
         var accountTokenId = IdGenerateHelper.GetId(context.ChainId, address, symbol);
         var accountToken = await GetEntityAsync<AccountCollection>(accountTokenId);
@@ -254,7 +261,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 Address = address,
                 Token = ObjectMapper.Map<TokenInfo, TokenBase>(token),
                 LowerCaseAddress = address.ToLower(),
-                FormatAmount = amount 
+                FormatAmount = amount
             };
         }
         else
@@ -262,6 +269,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
             originalBalance = accountToken.FormatAmount;
             accountToken.FormatAmount += amount;
         }
+
         await SaveEntityAsync(accountToken);
         switch (originalBalance)
         {
@@ -272,7 +280,6 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                 await ChangeTokenInfoHolderCountAsync(context, symbol, 1);
                 break;
         }
-        
     }
 
     protected async Task AddTransferAsync(TransferInfo transferInfo, LogEventContext context)
@@ -284,13 +291,13 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         transferInfo.Status = context.Transaction.Status.ToString();
         await SaveEntityAsync(transferInfo);
     }
-    
+
     protected async Task ChangeCollectionItemCountAsync(LogEventContext context, TokenInfo tokenInfo, long changeValue)
     {
         if (tokenInfo.Type == SymbolType.Nft)
         {
             var collection = await GetTokenAsync(context.ChainId, tokenInfo.CollectionSymbol);
-            collection.ItemCount += changeValue/(decimal)Math.Pow(10, tokenInfo.Decimals);
+            collection.ItemCount += changeValue / (decimal)Math.Pow(10, tokenInfo.Decimals);
             await SaveEntityAsync(collection);
         }
     }
