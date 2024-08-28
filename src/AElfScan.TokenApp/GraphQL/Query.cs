@@ -6,11 +6,13 @@ using Volo.Abp.ObjectMapping;
 
 namespace AElfScan.TokenApp.GraphQL;
 
-public class Query{
+public class Query
+{
     private static readonly List<string> InitSymbolList = new()
     {
-        "ELF","SHARE","VOTE","CPU","WRITE","READ","NET","RAM","DISK","STORAGE","TRAFFIC"
+        "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM", "DISK", "STORAGE", "TRAFFIC"
     };
+
     public static async Task<TokenInfoPageResultDto> TokenInfo(
         [FromServices] IReadOnlyRepository<TokenInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetTokenInfoDto input)
@@ -57,6 +59,7 @@ public class Query{
             var predicates = input.CollectionSymbols.Select(s =>
                 (Expression<Func<TokenInfo, bool>>)(o => o.CollectionSymbol == s));
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+
             queryable = queryable.Where(predicate);
         }
 
@@ -64,9 +67,19 @@ public class Query{
         {
             var predicates = input.Types.Select(s =>
                 (Expression<Func<TokenInfo, bool>>)(o => o.Type == s));
+
+            if (input.Types.Contains(SymbolType.Token))
+            {
+                predicates = predicates.Concat(new Expression<Func<TokenInfo, bool>>[]
+                {
+                    o => o.Type == SymbolType.Token || o.Symbol == "SGR-1"
+                });
+            }
+
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
+
 
         if (!input.Search.IsNullOrWhiteSpace())
         {
@@ -210,6 +223,14 @@ public class Query{
             queryable = queryable.Where(predicate);
         }
 
+        if (!input.AddressList.IsNullOrEmpty())
+        {
+            var predicates = input.AddressList.Select(s =>
+                (Expression<Func<Entities.AccountToken, bool>>)(o => o.Address == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+
         if (!input.SearchSymbols.IsNullOrEmpty())
         {
             var predicates = input.SearchSymbols.Select(s =>
@@ -343,9 +364,9 @@ public class Query{
             Items = objectMapper.Map<List<BlockBurnFeeInfo>, List<BlockBurnFeeDto>>(result)
         };
     }
-    
-    
-     public static async Task<AccountCollectionPageResultDto> AccountCollection(
+
+
+    public static async Task<AccountCollectionPageResultDto> AccountCollection(
         [FromServices] IReadOnlyRepository<AccountCollection> repository,
         [FromServices] IObjectMapper objectMapper, GetAccountCollectionDto input)
     {
@@ -367,6 +388,7 @@ public class Query{
         {
             queryable = queryable.Where(o => o.Token.Symbol == input.Symbol);
         }
+
         queryable = queryable.Where(o => o.FormatAmount > 0);
         queryable = QueryableExtensions.AccountCollectionSort(queryable, input);
 

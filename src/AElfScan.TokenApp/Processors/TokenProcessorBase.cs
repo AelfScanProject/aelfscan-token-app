@@ -3,6 +3,7 @@ using AeFinder.Sdk.Processor;
 using AElfScan.TokenApp.Entities;
 using AElf.CSharp.Core;
 using AElfScan.TokenApp.Helper;
+using Newtonsoft.Json;
 using Volo.Abp.ObjectMapping;
 
 namespace AElfScan.TokenApp.Processors;
@@ -130,6 +131,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                     Count = token.HolderCount,
                     DateStr = beforeDate
                 };
+                Logger.LogInformation("ModifyBalanceAsync dailyHolder:{p}",JsonConvert.SerializeObject(dailyHolder));
                 Logger.LogInformation("Add daily holder:chainId:{c},date:{d},count:{c}", context.ChainId, beforeDate,
                     token.HolderCount);
 
@@ -163,6 +165,7 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
 
         accountToken.FirstNftTransactionId = context.Transaction.TransactionId;
         accountToken.FirstNftTime = context.Block.BlockTime;
+        Logger.LogInformation("RecordFirstNftInfoAsync accountToken:{p}",JsonConvert.SerializeObject(accountToken));
         await SaveEntityAsync(accountToken);
     }
 
