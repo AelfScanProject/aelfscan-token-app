@@ -133,7 +133,6 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
                     Count = token.HolderCount,
                     DateStr = beforeDate
                 };
-                Logger.LogInformation("ModifyBalanceAsync dailyHolder:{p}", JsonConvert.SerializeObject(dailyHolder));
                 Logger.LogInformation("Add daily holder:chainId:{c},date:{d},count:{c}", context.ChainId, beforeDate,
                     token.HolderCount);
 
@@ -167,7 +166,6 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
 
         accountToken.FirstNftTransactionId = context.Transaction.TransactionId;
         accountToken.FirstNftTime = context.Block.BlockTime;
-        Logger.LogInformation("RecordFirstNftInfoAsync accountToken:{p}", JsonConvert.SerializeObject(accountToken));
         await SaveEntityAsync(accountToken);
     }
 
@@ -216,9 +214,6 @@ public abstract class TokenProcessorBase<TEvent> : LogEventProcessorBase<TEvent>
         var originalBalance = accountToken.Amount;
         accountToken.Amount += amount;
         accountToken.FormatAmount = accountToken.Amount / (decimal)Math.Pow(10, accountToken.Token.Decimals);
-
-        Logger.LogInformation("ModifyBalanceAndChangeHoldingCountAsync accountToken:{p}",
-            JsonConvert.SerializeObject(accountToken));
         await SaveEntityAsync(accountToken);
         if (accountToken.Token.Type == SymbolType.NftCollection)
         {
