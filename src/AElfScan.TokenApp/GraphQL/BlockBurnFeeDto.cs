@@ -6,6 +6,7 @@ public class BlockBurnFeeDto :AeFinderEntityDto
 {
     public string Symbol { get; set; }
     public long Amount { get; set; }
+    public long BlockHeight { get; set; }
 }
 
 public class BlockBurnFeeListDto
