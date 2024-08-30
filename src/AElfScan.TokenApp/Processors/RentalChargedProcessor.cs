@@ -8,7 +8,6 @@ public class RentalChargedProcessor : TokenProcessorBase<RentalCharged>
 {
     public override async Task ProcessAsync(RentalCharged logEvent, LogEventContext context)
     {
-        Logger.LogInformation("RentalChargedProcessor start");
         
         if (logEvent.Amount == 0)
         {

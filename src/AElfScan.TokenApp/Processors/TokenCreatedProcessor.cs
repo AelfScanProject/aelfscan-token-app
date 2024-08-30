@@ -9,7 +9,6 @@ public class TokenCreatedProcessor : TokenProcessorBase<TokenCreated>
 {
     public override async Task ProcessAsync(TokenCreated logEvent, LogEventContext context)
     {
-        Logger.LogInformation("token created start");
         var id = IdGenerateHelper.GetId(context.ChainId, logEvent.Symbol);
         var token = await GetTokenAsync(context.ChainId, logEvent.Symbol);
         if (token == null)
@@ -33,7 +32,6 @@ public class TokenCreatedProcessor : TokenProcessorBase<TokenCreated>
         {
             token.LowerCaseTokenName = token.TokenName.ToLower();
         }
-        Logger.LogInformation("token created:{p}", JsonConvert.SerializeObject(token));
 
         await SaveEntityAsync(token);
     }
