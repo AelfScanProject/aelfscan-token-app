@@ -12,6 +12,11 @@ public class Query
     {
         "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM", "DISK", "STORAGE", "TRAFFIC"
     };
+    
+    private static readonly List<string> SpecialSymbolList = new()
+    {
+        "SGR-1"
+    };
 
     public static async Task<TokenInfoPageResultDto> TokenInfo(
         [FromServices] IReadOnlyRepository<TokenInfo> repository,
@@ -70,10 +75,22 @@ public class Query
 
             if (input.Types.Contains(SymbolType.Token))
             {
+                
                 predicates = predicates.Concat(new Expression<Func<TokenInfo, bool>>[]
                 {
-                    o => o.Type == SymbolType.Token || o.Symbol == "SGR-1"
+                    o => o.Type == SymbolType.Token
                 });
+
+                // 添加新的条件，检查o.Symbol是否等于列表中的元素A或B
+                var symbolPredicates = SpecialSymbolList.Select(s =>
+                    (Expression<Func<TokenInfo, bool>>)(o => o.Symbol == s));
+
+                predicates = predicates.Concat(symbolPredicates);
+                
+                // predicates = predicates.Concat(new Expression<Func<TokenInfo, bool>>[]
+                // {
+                //     o => o.Type == SymbolType.Token || o.Symbol == "SGR-1"
+                // });
             }
 
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
