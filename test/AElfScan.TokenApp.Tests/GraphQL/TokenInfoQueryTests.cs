@@ -62,7 +62,7 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
 
         var list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {
-            ChainId = "AELF",
+            ChainId = "tDVV",
             SkipCount = 0,
             MaxResultCount = 10
         });
