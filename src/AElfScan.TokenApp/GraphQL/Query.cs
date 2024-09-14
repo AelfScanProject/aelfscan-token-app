@@ -13,6 +13,7 @@ public class Query
         "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM", "DISK", "STORAGE", "TRAFFIC"
     };
 
+
     public static async Task<TokenInfoPageResultDto> TokenInfo(
         [FromServices] IReadOnlyRepository<TokenInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetTokenInfoDto input)
@@ -72,8 +73,14 @@ public class Query
             {
                 predicates = predicates.Concat(new Expression<Func<TokenInfo, bool>>[]
                 {
-                    o => o.Type == SymbolType.Token || o.Symbol == "SGR-1"
+                    o => o.Type == SymbolType.Token
                 });
+
+                // Add A new condition to check whether o.Symbol is equal to the element A or B in the list
+                var symbolPredicates = TokenAppConstants.SpecialSymbolList.Select(s =>
+                    (Expression<Func<TokenInfo, bool>>)(o => o.Symbol == s));
+
+                predicates = predicates.Concat(symbolPredicates);
             }
 
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
