@@ -32,3 +32,9 @@ public class TransferInfoPageResultDto
     public long TotalCount { get; set; }
     public List<TransferInfoDto> Items { get; set; }
 }
+
+public class TransferInfoByBlockPageResultDto
+{
+    public long TotalCount { get; set; }
+    public List<TransferInfoDto> Items { get; set; }
+}

@@ -270,7 +270,10 @@ public class Query
         input.Validate();
 
         var queryable = await repository.GetQueryableAsync();
-
+        if (input.BeginBlockHeight is > 0)
+        {
+            queryable = queryable.Where(o => o.Metadata.Block.BlockHeight >= input.BeginBlockHeight);
+        }
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
@@ -342,6 +345,62 @@ public class Query
         };
     }
 
+    
+        public static async Task<TransferInfoByBlockPageResultDto> TransferInfoByBlock(
+        [FromServices] IReadOnlyRepository<TransferInfo> repository,
+        [FromServices] IObjectMapper objectMapper, GetTransferByBlockDto input)
+    {
+        input.Validate();
+        var queryable = await repository.GetQueryableAsync();
+        queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
+        queryable = queryable.Where(o => o.Metadata.Block.BlockHeight >= input.BeginBlockHeight);
+        if (input.EndBlockHeight is > 0)
+        {
+            queryable = queryable.Where(o => o.Metadata.Block.BlockHeight <= input.EndBlockHeight);
+        }
+
+        if (!input.SymbolList.IsNullOrEmpty())
+        {
+            var predicates = input.SymbolList.Select(s =>
+                (Expression<Func<TransferInfo, bool>>)(o => o.Token.Symbol == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+
+        if (!input.FromList.IsNullOrEmpty())
+        {
+            var predicates = input.FromList.Select(s =>
+                (Expression<Func<Entities.TransferInfo, bool>>)(o => o.From == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        if (!input.ToList.IsNullOrEmpty())
+        {
+            var predicates = input.ToList.Select(s =>
+                (Expression<Func<Entities.TransferInfo, bool>>)(o => o.To == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        
+        if (!input.Methods.IsNullOrEmpty())
+        {
+            var predicates = input.Methods.Select(s =>
+                (Expression<Func<Entities.TransferInfo, bool>>)(o => o.Method == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        //add order by
+        queryable = QueryableExtensions.TransferInfoSort(queryable, input);
+
+        var totalCount = await QueryableExtensions.CountAsync(queryable);
+        var result = queryable.Skip(input.SkipCount)
+            .Take(input.MaxResultCount).ToList();
+        return new TransferInfoByBlockPageResultDto()
+        {
+            TotalCount = totalCount,
+            Items = objectMapper.Map<List<TransferInfo>, List<TransferInfoDto>>(result)
+        };
+    }
     public static async Task<BlockBurnFeeListDto> BlockBurnFeeInfo(
         [FromServices] IReadOnlyRepository<BlockBurnFeeInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetBlockBurnFeeDto input)

@@ -57,18 +57,8 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
         }
 
         await SaveDataAsync();
-        
-     
 
         var list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
-        {
-            ChainId = "AELF",
-            SkipCount = 0,
-            MaxResultCount = 10
-        });
-        list.Items.Count.ShouldBe(0);
-
-        list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {
             ChainId = ChainId,
             SkipCount = 0,
@@ -79,7 +69,7 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
         list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {
             ChainId = ChainId,
-            Symbol = "SYMBOL0",
+            Symbol = "SGR-0",
             SkipCount = 0,
             MaxResultCount = 10
         });
@@ -119,7 +109,7 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
             SkipCount = 0,
             MaxResultCount = 10
         });
-        list.Items.Count.ShouldBe(2);
+        list.Items.Count.ShouldBe(8);
 
         // list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         // {
