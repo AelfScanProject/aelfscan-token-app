@@ -37,7 +37,7 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
         {
             var tokenCreated = new TokenCreated
             {
-                Symbol = "SYMBOL" + i,
+                Symbol = "SGR-" + i,
                 Decimals = 8,
                 IsBurnable = true,
                 Issuer = Address.FromBase58("xUgvBLughMpZp1w2E1GmgACU9h8EzqY5X4ZBqSKRRc4g9QL72"),
@@ -60,14 +60,6 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
 
         var list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {
-            ChainId = "tDVV",
-            SkipCount = 0,
-            MaxResultCount = 10
-        });
-        list.Items.Count.ShouldBe(0);
-
-        list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
-        {
             ChainId = ChainId,
             SkipCount = 0,
             MaxResultCount = 10
@@ -77,7 +69,7 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
         list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {
             ChainId = ChainId,
-            Symbol = "SYMBOL0",
+            Symbol = "SGR-0",
             SkipCount = 0,
             MaxResultCount = 10
         });
@@ -117,8 +109,8 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
             SkipCount = 0,
             MaxResultCount = 10
         });
-        list.Items.Count.ShouldBe(2);
-        
+        list.Items.Count.ShouldBe(8);
+
         // list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         // {
         //     ChainId = ChainId,

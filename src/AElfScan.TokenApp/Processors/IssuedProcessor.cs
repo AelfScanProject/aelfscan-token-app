@@ -1,6 +1,8 @@
+using AeFinder.Sdk.Logging;
 using AeFinder.Sdk.Processor;
 using AElfScan.TokenApp.Entities;
 using AElf.Contracts.MultiToken;
+using Newtonsoft.Json;
 
 namespace AElfScan.TokenApp.Processors;
 
@@ -11,9 +13,10 @@ public class IssuedProcessor : TokenProcessorBase<Issued>
         var token = await GetTokenAsync(context.ChainId, logEvent.Symbol);
         token.Supply += logEvent.Amount;
         token.Issued += logEvent.Amount;
+    
         await SaveEntityAsync(token);
         await ChangeCollectionItemCountAsync(context, token, logEvent.Amount);
-        
+
         var transfer = new TransferInfo();
         ObjectMapper.Map(logEvent, transfer);
         transfer.Method = "Issue";

@@ -19,6 +19,11 @@ public class QueryableExtensions
     {
         return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
     }
+    
+    public static IQueryable<TransferInfo> TransferInfoSort(IQueryable<TransferInfo> queryable, GetTransferByBlockDto input)
+    {
+        return ApplySortingAndPaging(queryable, input.GetAdaptableOrderInfos(), input.SearchAfter);
+    }
 
     public static IQueryable<AccountToken> AccountTokenSort(IQueryable<AccountToken> queryable,
         GetAccountTokenDto input)
@@ -83,6 +88,9 @@ public class QueryableExtensions
                 break;
             case "TransactionId":
                 property = GetNestedPropertyExpression(parameter, "TransactionId");
+                break;
+            case "ChainId":
+                property = GetNestedPropertyExpression(parameter, "Metadata.ChainId");
                 break;
             default:
                 throw new Exception("Invalid order by field");
