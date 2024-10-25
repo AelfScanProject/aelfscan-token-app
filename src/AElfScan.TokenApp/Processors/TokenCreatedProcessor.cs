@@ -1,5 +1,7 @@
+using AeFinder.Sdk.Logging;
 using AeFinder.Sdk.Processor;
 using AElf.Contracts.MultiToken;
+using Newtonsoft.Json;
 
 namespace AElfScan.TokenApp.Processors;
 

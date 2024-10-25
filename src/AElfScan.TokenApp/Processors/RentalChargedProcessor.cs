@@ -1,3 +1,4 @@
+using AeFinder.Sdk.Logging;
 using AeFinder.Sdk.Processor;
 using AElf.Contracts.MultiToken;
 
@@ -7,6 +8,7 @@ public class RentalChargedProcessor : TokenProcessorBase<RentalCharged>
 {
     public override async Task ProcessAsync(RentalCharged logEvent, LogEventContext context)
     {
+        
         if (logEvent.Amount == 0)
         {
             return;

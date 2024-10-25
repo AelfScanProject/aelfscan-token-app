@@ -20,4 +20,7 @@ public class GetTransferDto : PagedResultQueryDto
     
     //support txId, address, symbol
     public string FuzzySearch { get; set; } = "";
+    
+    public DateTime? BeginBlockTime { get; set; }
+
 }

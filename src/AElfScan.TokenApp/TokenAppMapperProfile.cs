@@ -20,7 +20,7 @@ public class TokenAppMapperProfile : IndexerMapperBase
             .ForMember(d => d.LowerCaseSymbol,
                 opt => opt.MapFrom(s => MapLowerCaseString(s.Symbol)))
             .ForMember(d => d.ExternalInfo,
-                opt => opt.MapFrom(s => s.ExternalInfo.Value.ToDictionary(o => o.Key, o => o.Value)))
+                opt => opt.MapFrom(s => s.ExternalInfo.Value.Where(o => !o.Key.IsNullOrEmpty()).ToDictionary(o => o.Key, o => o.Value)))
             .ForMember(d => d.IssueChainId,
                 opt => opt.MapFrom(s =>
                     s.IssueChainId == 0 ? null : ChainHelper.ConvertChainIdToBase58(s.IssueChainId)));

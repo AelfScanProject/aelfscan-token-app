@@ -37,4 +37,8 @@ public class TokenAppConstants
             }
         }
     };
+    public static readonly List<string> SpecialSymbolList = new()
+    {
+        "SGR-1"
+    };
 }

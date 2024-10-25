@@ -1,3 +1,5 @@
+using AElfScan.TokenApp.Entities;
+
 namespace AElfScan.TokenApp.GraphQL;
 
 public class TokenInfoDto : TokenBaseDto
@@ -14,6 +16,8 @@ public class TokenInfoDto : TokenBaseDto
     public List<TokenExternalInfoDto> ExternalInfo { get; set; } = new();
     public long HolderCount { get; set; }
     public long TransferCount { get; set; }
+    
+    public SymbolType Type { get; set; }
     
     public decimal ItemCount { get; set; }
 }

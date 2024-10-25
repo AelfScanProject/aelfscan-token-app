@@ -6,11 +6,14 @@ using Volo.Abp.ObjectMapping;
 
 namespace AElfScan.TokenApp.GraphQL;
 
-public class Query{
+public class Query
+{
     private static readonly List<string> InitSymbolList = new()
     {
-        "ELF","SHARE","VOTE","CPU","WRITE","READ","NET","RAM","DISK","STORAGE","TRAFFIC"
+        "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM",  "STORAGE"
     };
+
+
     public static async Task<TokenInfoPageResultDto> TokenInfo(
         [FromServices] IReadOnlyRepository<TokenInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetTokenInfoDto input)
@@ -19,6 +22,11 @@ public class Query{
 
         var queryable = await repository.GetQueryableAsync();
 
+        if (input.BeginBlockTime != null)
+        {
+            queryable = queryable.Where(o => o.Metadata.Block.BlockTime > input.BeginBlockTime);
+            queryable = queryable.Where(o => o.TransferCount == 0);
+        }
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
@@ -57,6 +65,7 @@ public class Query{
             var predicates = input.CollectionSymbols.Select(s =>
                 (Expression<Func<TokenInfo, bool>>)(o => o.CollectionSymbol == s));
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+
             queryable = queryable.Where(predicate);
         }
 
@@ -64,9 +73,25 @@ public class Query{
         {
             var predicates = input.Types.Select(s =>
                 (Expression<Func<TokenInfo, bool>>)(o => o.Type == s));
+
+            if (input.Types.Contains(SymbolType.Token))
+            {
+                predicates = predicates.Concat(new Expression<Func<TokenInfo, bool>>[]
+                {
+                    o => o.Type == SymbolType.Token
+                });
+
+                // Add A new condition to check whether o.Symbol is equal to the element A or B in the list
+                var symbolPredicates = TokenAppConstants.SpecialSymbolList.Select(s =>
+                    (Expression<Func<TokenInfo, bool>>)(o => o.Symbol == s));
+
+                predicates = predicates.Concat(symbolPredicates);
+            }
+
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
+
 
         if (!input.Search.IsNullOrWhiteSpace())
         {
@@ -198,6 +223,20 @@ public class Query{
         {
             var predicates = input.Types.Select(s =>
                 (Expression<Func<AccountToken, bool>>)(o => o.Token.Type == s));
+           
+            if (input.Types.Contains(SymbolType.Token))
+            {
+                predicates = predicates.Concat(new Expression<Func<AccountToken, bool>>[]
+                {
+                    o => o.Token.Type == SymbolType.Token
+                });
+
+                // Add A new condition to check whether o.Symbol is equal to the element A or B in the list
+                var symbolPredicates = TokenAppConstants.SpecialSymbolList.Select(s =>
+                    (Expression<Func<AccountToken, bool>>)(o => o.Token.Symbol == s));
+
+                predicates = predicates.Concat(symbolPredicates);
+            }
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
@@ -206,6 +245,14 @@ public class Query{
         {
             var predicates = input.Symbols.Select(s =>
                 (Expression<Func<AccountToken, bool>>)(o => o.Token.Symbol == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+
+        if (!input.AddressList.IsNullOrEmpty())
+        {
+            var predicates = input.AddressList.Select(s =>
+                (Expression<Func<Entities.AccountToken, bool>>)(o => o.Address == s));
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
@@ -249,7 +296,10 @@ public class Query{
         input.Validate();
 
         var queryable = await repository.GetQueryableAsync();
-
+        if (input.BeginBlockTime != null)
+        {
+            queryable = queryable.Where(o => o.Metadata.Block.BlockTime > input.BeginBlockTime);
+        }
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
@@ -321,6 +371,62 @@ public class Query{
         };
     }
 
+    
+        public static async Task<TransferInfoByBlockPageResultDto> TransferInfoByBlock(
+        [FromServices] IReadOnlyRepository<TransferInfo> repository,
+        [FromServices] IObjectMapper objectMapper, GetTransferByBlockDto input)
+    {
+        input.Validate();
+        var queryable = await repository.GetQueryableAsync();
+        queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
+        queryable = queryable.Where(o => o.Metadata.Block.BlockHeight >= input.BeginBlockHeight);
+        if (input.EndBlockHeight is > 0)
+        {
+            queryable = queryable.Where(o => o.Metadata.Block.BlockHeight <= input.EndBlockHeight);
+        }
+
+        if (!input.SymbolList.IsNullOrEmpty())
+        {
+            var predicates = input.SymbolList.Select(s =>
+                (Expression<Func<TransferInfo, bool>>)(o => o.Token.Symbol == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+
+        if (!input.FromList.IsNullOrEmpty())
+        {
+            var predicates = input.FromList.Select(s =>
+                (Expression<Func<Entities.TransferInfo, bool>>)(o => o.From == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        if (!input.ToList.IsNullOrEmpty())
+        {
+            var predicates = input.ToList.Select(s =>
+                (Expression<Func<Entities.TransferInfo, bool>>)(o => o.To == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        
+        if (!input.Methods.IsNullOrEmpty())
+        {
+            var predicates = input.Methods.Select(s =>
+                (Expression<Func<Entities.TransferInfo, bool>>)(o => o.Method == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
+        //add order by
+        queryable = QueryableExtensions.TransferInfoSort(queryable, input);
+
+        var totalCount = await QueryableExtensions.CountAsync(queryable);
+        var result = queryable.Skip(input.SkipCount)
+            .Take(input.MaxResultCount).ToList();
+        return new TransferInfoByBlockPageResultDto()
+        {
+            TotalCount = totalCount,
+            Items = objectMapper.Map<List<TransferInfo>, List<TransferInfoDto>>(result)
+        };
+    }
     public static async Task<BlockBurnFeeListDto> BlockBurnFeeInfo(
         [FromServices] IReadOnlyRepository<BlockBurnFeeInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetBlockBurnFeeDto input)
@@ -343,9 +449,9 @@ public class Query{
             Items = objectMapper.Map<List<BlockBurnFeeInfo>, List<BlockBurnFeeDto>>(result)
         };
     }
-    
-    
-     public static async Task<AccountCollectionPageResultDto> AccountCollection(
+
+
+    public static async Task<AccountCollectionPageResultDto> AccountCollection(
         [FromServices] IReadOnlyRepository<AccountCollection> repository,
         [FromServices] IObjectMapper objectMapper, GetAccountCollectionDto input)
     {
@@ -362,11 +468,18 @@ public class Query{
         {
             queryable = queryable.Where(o => o.Address == input.Address);
         }
-
+        if (!input.AddressList.IsNullOrEmpty())
+        {
+            var predicates = input.AddressList.Select(s =>
+                (Expression<Func<Entities.AccountCollection, bool>>)(o => o.Address == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
         if (!input.Symbol.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Token.Symbol == input.Symbol);
         }
+
         queryable = queryable.Where(o => o.FormatAmount > 0);
         queryable = QueryableExtensions.AccountCollectionSort(queryable, input);
 
