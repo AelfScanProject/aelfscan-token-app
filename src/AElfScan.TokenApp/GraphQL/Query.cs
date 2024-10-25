@@ -10,7 +10,7 @@ public class Query
 {
     private static readonly List<string> InitSymbolList = new()
     {
-        "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM", "DISK", "STORAGE", "TRAFFIC"
+        "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM",  "STORAGE"
     };
 
 
@@ -22,6 +22,11 @@ public class Query
 
         var queryable = await repository.GetQueryableAsync();
 
+        if (input.BeginBlockTime != null)
+        {
+            queryable = queryable.Where(o => o.Metadata.Block.BlockTime > input.BeginBlockTime);
+            queryable = queryable.Where(o => o.TransferCount == 0);
+        }
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
@@ -218,6 +223,20 @@ public class Query
         {
             var predicates = input.Types.Select(s =>
                 (Expression<Func<AccountToken, bool>>)(o => o.Token.Type == s));
+           
+            if (input.Types.Contains(SymbolType.Token))
+            {
+                predicates = predicates.Concat(new Expression<Func<AccountToken, bool>>[]
+                {
+                    o => o.Token.Type == SymbolType.Token
+                });
+
+                // Add A new condition to check whether o.Symbol is equal to the element A or B in the list
+                var symbolPredicates = TokenAppConstants.SpecialSymbolList.Select(s =>
+                    (Expression<Func<AccountToken, bool>>)(o => o.Token.Symbol == s));
+
+                predicates = predicates.Concat(symbolPredicates);
+            }
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
@@ -277,9 +296,9 @@ public class Query
         input.Validate();
 
         var queryable = await repository.GetQueryableAsync();
-        if (input.BeginBlockHeight is > 0)
+        if (input.BeginBlockTime != null)
         {
-            queryable = queryable.Where(o => o.Metadata.Block.BlockHeight >= input.BeginBlockHeight);
+            queryable = queryable.Where(o => o.Metadata.Block.BlockTime > input.BeginBlockTime);
         }
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
@@ -449,7 +468,13 @@ public class Query
         {
             queryable = queryable.Where(o => o.Address == input.Address);
         }
-
+        if (!input.AddressList.IsNullOrEmpty())
+        {
+            var predicates = input.AddressList.Select(s =>
+                (Expression<Func<Entities.AccountCollection, bool>>)(o => o.Address == s));
+            var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
+            queryable = queryable.Where(predicate);
+        }
         if (!input.Symbol.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Token.Symbol == input.Symbol);

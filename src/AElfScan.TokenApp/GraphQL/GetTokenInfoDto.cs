@@ -22,4 +22,6 @@ public class GetTokenInfoDto : PagedResultQueryDto
     public string ExactSearch { get; set; } = "";
     
     public string FuzzySearch { get; set; } = "";
+    
+    public DateTime? BeginBlockTime { get; set; }
 }
