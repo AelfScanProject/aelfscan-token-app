@@ -508,7 +508,10 @@ public class Query
             queryable = queryable.Where(o => o.Token.Symbol == input.Symbol);
         }
 
-        queryable = queryable.Where(o => o.FormatAmount > 0);
+        if (input.AmountGreaterThanZero != null && input.AmountGreaterThanZero.Value)
+        {
+            queryable = queryable.Where(o => o.FormatAmount > 0);
+        }
         queryable = QueryableExtensions.AccountCollectionSort(queryable, input);
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);
