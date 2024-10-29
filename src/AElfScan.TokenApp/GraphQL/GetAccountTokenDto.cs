@@ -23,4 +23,6 @@ public class GetAccountTokenDto : PagedResultQueryDto
 
     //support txId, address, symbol
     public string FuzzySearch { get; set; } = "";
+    
+    public bool? AmountGreaterThanZero { get; set; } = true;
 }

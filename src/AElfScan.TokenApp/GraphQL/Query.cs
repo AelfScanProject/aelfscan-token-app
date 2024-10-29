@@ -295,7 +295,10 @@ public class Query
             }
         }
 
-        queryable = queryable.Where(o => o.Amount > 0);
+        if (input.AmountGreaterThanZero != null && input.AmountGreaterThanZero.Value)
+        {
+            queryable = queryable.Where(o => o.Amount > 0);
+        }
      
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);
