@@ -104,15 +104,20 @@ public class Query
             queryable = queryable.Where(o => o.Symbol == input.ExactSearch || o.TokenName == input.ExactSearch);
         }
 
+        var totalCount = 0;
         if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.LowerCaseSymbol.Contains(input.FuzzySearch)
                                              || o.LowerCaseTokenName.Contains(input.FuzzySearch));
         }
+        else
+        {
+            totalCount = await QueryableExtensions.CountAsync(queryable);
+        }
 
         //add order by
         queryable = QueryableExtensions.TokenInfoSort(queryable, input);
-        var totalCount = await QueryableExtensions.CountAsync(queryable);
+
         var result = queryable.Skip(input.SkipCount)
             .Take(input.MaxResultCount).ToList();
         // not needed after resubscribing
@@ -299,7 +304,7 @@ public class Query
         {
             queryable = queryable.Where(o => o.Amount > 0);
         }
-     
+
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);
         var result = queryable.Skip(input.SkipCount)
