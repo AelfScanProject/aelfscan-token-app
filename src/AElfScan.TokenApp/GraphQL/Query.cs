@@ -283,22 +283,8 @@ public class Query
                                              || o.LowerCaseAddress.Contains(input.FuzzySearch));
         }
 
-        if (!input.OrderInfos.IsNullOrEmpty())
-        {
-            var orderInfos = input.OrderInfos.Where(c => c.OrderBy == "FirstNftTime").ToList();
-            if (!orderInfos.IsNullOrEmpty())
-            {
-                var orderInfo = orderInfos.First();
-
-                queryable = orderInfo.Sort == SortType.Desc.ToString()
-                    ? queryable.OrderByDescending(c => c.FirstNftTime)
-                    : queryable.OrderBy(c => c.FirstNftTime);
-            }
-            else
-            {
-                queryable = QueryableExtensions.AccountTokenSort(queryable, input);
-            }
-        }
+       
+        queryable = QueryableExtensions.AccountTokenSort(queryable, input);
 
         if (input.AmountGreaterThanZero != null && input.AmountGreaterThanZero.Value)
         {
