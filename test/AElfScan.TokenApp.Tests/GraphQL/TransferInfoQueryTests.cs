@@ -157,7 +157,13 @@ public class TransferInfoQueryTests : TokenContractAppTestBase
         {
             Symbol = "ELF",
             SkipCount = 0,
-            MaxResultCount = 100
+            MaxResultCount = 100,
+            Search = "ELF",
+            FuzzySearch="el",
+            Types = new List<SymbolType>()
+            {
+                SymbolType.Token
+            }
         });
         list.Items.Count.ShouldBe(4);
         

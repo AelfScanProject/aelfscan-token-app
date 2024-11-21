@@ -65,8 +65,13 @@ public class AccountTokenQueryTests : TokenContractAppTestBase
         list = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper, new GetAccountTokenDto()
         {
             Address = TestAddress.ToBase58(),
+            AddressList = new List<string>()
+            {
+                TestAddress.ToBase58()
+            },
             SkipCount = 0,
-            MaxResultCount = 10
+            MaxResultCount = 10,
+            AmountGreaterThanZero = true
         });
         list.Items.Count.ShouldBe(3);
         
@@ -74,16 +79,23 @@ public class AccountTokenQueryTests : TokenContractAppTestBase
         {
             Symbol = "ELF",
             SkipCount = 0,
-            MaxResultCount = 10
+            MaxResultCount = 10,
+            Types = new List<SymbolType>()
+            {
+                SymbolType.Token
+            },
+             Symbols = new List<string>()
+             {
+                 "ELF"
+             },
+             SearchSymbols = new List<string>()
+             {
+                 "ELF"
+             },
+             Search = "ELF",
+            FuzzySearch ="f"
         });
         list.Items.Count.ShouldBe(3);
         
-        // list = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper, new GetAccountTokenDto()
-        // {
-        //     PartialSymbol = "L",
-        //     SkipCount = 0,
-        //     MaxResultCount = 10
-        // });
-        // list.Count.ShouldBe(3);
     }
 }

@@ -78,6 +78,9 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
         {
             ChainId = ChainId,
             TokenName = "TokenName0",
+            Search= "TokenName",
+            ExactSearch ="TokenName0",
+            FuzzySearch ="tokenname",
             SkipCount = 0,
             MaxResultCount = 10
         });
