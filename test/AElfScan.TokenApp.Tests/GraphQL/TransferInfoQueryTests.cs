@@ -169,12 +169,34 @@ public class TransferInfoQueryTests : TokenContractAppTestBase
         });
         list.Items.Count.ShouldBe(5);
         
-        // list = await Query.TransferInfo(TransferInfoReadOnlyRepository, ObjectMapper, new GetTransferDto()
-        // {
-        //     Methods = new List<string>{"Transfer"},
-        //     SkipCount = 0,
-        //     MaxResultCount = 100
-        // });
-        // list.Count.ShouldBe(3);
+       var  listByBlock = await Query.TransferInfoByBlock(TransferInfoReadOnlyRepository, ObjectMapper, new GetTransferByBlockDto()
+        {
+            ChainId = "AELF",
+            SkipCount = 0,
+            MaxResultCount = 100,
+            BeginBlockHeight = 98,
+            EndBlockHeight = 101,
+            SymbolList = new List<string>()
+            {
+                "ELF"
+            },
+            FromList = new List<string>()
+            {
+                TestAddress.ToBase58()
+            },
+            ToList = new List<string>()
+            {
+                "zBVzvebV9CvyFAcmzZ7uj9MZLMHf2t1xfkECEEpvcUyTa3XU8"
+            },
+            Methods = new List<string>()
+            {
+                "Transfer"
+            }
+            
+        });
+        listByBlock.Items.Count.ShouldBe(1);
     }
+    
+    
+   
 }
