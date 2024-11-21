@@ -51,7 +51,6 @@ public class TransferInfoQueryTests : TokenContractAppTestBase
             };
             var logEventContext = GenerateLogEventContext(transferred);            
             await _transferredProcessor.ProcessAsync(logEventContext);
-            await SaveDataAsync();
         }
         {
             var transferred = new Transferred
@@ -64,7 +63,6 @@ public class TransferInfoQueryTests : TokenContractAppTestBase
             };
             var logEventContext = GenerateLogEventContext(transferred);
             await _transferredProcessor.ProcessAsync(logEventContext);
-            await SaveDataAsync();
         }
 
         var list = await Query.TransferInfo(TransferInfoReadOnlyRepository, ObjectMapper, new GetTransferDto()
@@ -119,7 +117,7 @@ public class TransferInfoQueryTests : TokenContractAppTestBase
                     Sort = "Desc"
                 }
             },
-            SearchAfter = new List<string> { "200000000", "1" }
+            SearchAfter = new List<string> { "100", "1" }
         });
         list.Items.Count.ShouldBe(3);
         

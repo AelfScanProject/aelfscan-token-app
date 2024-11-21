@@ -30,7 +30,6 @@ public class ResourceTokenClaimedProcessorTests : TokenContractAppTestBase
         var logEventContext = GenerateLogEventContext(@event);
 
         await _resourceTokenClaimedProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
 
         var balancePayer = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper, new GetAccountTokenDto
         {

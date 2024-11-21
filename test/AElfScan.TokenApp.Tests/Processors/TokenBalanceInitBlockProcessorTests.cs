@@ -28,7 +28,6 @@ public class TokenBalanceInitBlockProcessorTests : TokenContractAppTestBase
                 BlockHeight = 100
             },
             new BlockContext { ChainId = "AELF" });
-        await SaveDataAsync();
         
         var accountTokens = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
@@ -44,7 +43,6 @@ public class TokenBalanceInitBlockProcessorTests : TokenContractAppTestBase
                 BlockHeight = 99
             },
             new BlockContext { ChainId = "AELF" });
-        await SaveDataAsync();
         
         var tokens = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper,new GetTokenInfoDto
         {

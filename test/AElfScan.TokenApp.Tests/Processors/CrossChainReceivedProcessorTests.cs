@@ -35,7 +35,6 @@ public class CrossChainReceivedProcessorTests : TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(@event);
         await _crossChainReceivedProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
 
         var token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {

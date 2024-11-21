@@ -31,7 +31,6 @@ public class TransactionFeeClaimedProcessorTests: TokenContractAppTestBase
 
         var logEventContext = GenerateLogEventContext(@event);
         await _transactionFeeClaimedProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var accountToken = await GetAccountTokenAsync(ChainId, @event.Receiver.ToBase58(), @event.Symbol);
         

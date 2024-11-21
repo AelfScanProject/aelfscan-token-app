@@ -56,7 +56,6 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
             await _tokenCreatedProcessor.ProcessAsync(logEventContext);
         }
 
-        await SaveDataAsync();
 
         var list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {

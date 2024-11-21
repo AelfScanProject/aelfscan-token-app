@@ -34,7 +34,6 @@ public class CrossChainTransferredProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(@event);
         await _crossChainTransferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var transfer = await Query.TransferInfo(TransferInfoReadOnlyRepository, ObjectMapper, new GetTransferDto
         {

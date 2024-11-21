@@ -37,7 +37,6 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         //modify back
         TokenAppConstants.StartProcessBalanceEventHeight = new Dictionary<string, long>
