@@ -107,7 +107,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         {
             ChainId = ChainId,
             Address = TestAddress.ToBase58(),
-            Symbol = collectionSymbol
+            Symbol = collectionSymbol,
+            AmountGreaterThanZero = true
         });
         accountCollectionTokenFrom1.Items[0].TransferCount.ShouldBe(2);
         accountCollectionTokenFrom1.Items[0].FormatAmount.ShouldBe(100);
