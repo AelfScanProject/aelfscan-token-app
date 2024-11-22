@@ -116,7 +116,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         {
             ChainId = ChainId,
             Address = transferred.To.ToBase58(),
-            Symbol = transferred.Symbol
+            Symbol = transferred.Symbol,
+            AmountGreaterThanZero = true
         });
         accountNftTokenTo.Items.ShouldBeEmpty();
         
