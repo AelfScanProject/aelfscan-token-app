@@ -9,5 +9,5 @@ public class GetAccountCollectionDto : PagedResultQueryDto
     public string Symbol { get; set; }
     
     public List<string> AddressList { get; set; } = new();
-
+    public bool? AmountGreaterThanZero { get; set; }
 }

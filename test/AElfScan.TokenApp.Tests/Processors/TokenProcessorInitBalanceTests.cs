@@ -37,7 +37,6 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         //modify back
         TokenAppConstants.StartProcessBalanceEventHeight = new Dictionary<string, long>
@@ -108,7 +107,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         {
             ChainId = ChainId,
             Address = TestAddress.ToBase58(),
-            Symbol = collectionSymbol
+            Symbol = collectionSymbol,
+            AmountGreaterThanZero = true
         });
         accountCollectionTokenFrom1.Items[0].TransferCount.ShouldBe(2);
         accountCollectionTokenFrom1.Items[0].FormatAmount.ShouldBe(100);
@@ -117,7 +117,8 @@ public class TokenProcessorInitBalanceTests : TokenContractAppTestBase
         {
             ChainId = ChainId,
             Address = transferred.To.ToBase58(),
-            Symbol = transferred.Symbol
+            Symbol = transferred.Symbol,
+            AmountGreaterThanZero = true
         });
         accountNftTokenTo.Items.ShouldBeEmpty();
         

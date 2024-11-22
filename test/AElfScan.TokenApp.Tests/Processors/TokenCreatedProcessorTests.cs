@@ -41,7 +41,6 @@ public class TokenCreatedProcessorTests : TokenContractAppTestBase
         var logEventContext = GenerateLogEventContext(tokenCreated);
 
         await _tokenCreatedProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
 
         var token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {

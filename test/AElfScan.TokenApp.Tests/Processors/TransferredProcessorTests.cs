@@ -31,7 +31,6 @@ public class TransferredProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {
@@ -139,7 +138,6 @@ public class TransferredProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {
@@ -221,7 +219,6 @@ public class TransferredProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var tokenNft = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {
@@ -345,7 +342,6 @@ public class TransferredProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(transferred);
         await _transferredProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {

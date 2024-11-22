@@ -10,7 +10,7 @@ public class Query
 {
     private static readonly List<string> InitSymbolList = new()
     {
-        "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM",  "STORAGE"
+        "ELF", "SHARE", "VOTE", "CPU", "WRITE", "READ", "NET", "RAM", "STORAGE"
     };
 
 
@@ -27,6 +27,7 @@ public class Query
             queryable = queryable.Where(o => o.Metadata.Block.BlockTime > input.BeginBlockTime);
             queryable = queryable.Where(o => o.TransferCount == 0);
         }
+
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
@@ -103,15 +104,20 @@ public class Query
             queryable = queryable.Where(o => o.Symbol == input.ExactSearch || o.TokenName == input.ExactSearch);
         }
 
+        var totalCount = 0;
         if (!input.FuzzySearch.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.LowerCaseSymbol.Contains(input.FuzzySearch)
                                              || o.LowerCaseTokenName.Contains(input.FuzzySearch));
         }
+        else
+        {
+            totalCount = await QueryableExtensions.CountAsync(queryable);
+        }
 
         //add order by
         queryable = QueryableExtensions.TokenInfoSort(queryable, input);
-        var totalCount = await QueryableExtensions.CountAsync(queryable);
+
         var result = queryable.Skip(input.SkipCount)
             .Take(input.MaxResultCount).ToList();
         // not needed after resubscribing
@@ -223,7 +229,7 @@ public class Query
         {
             var predicates = input.Types.Select(s =>
                 (Expression<Func<AccountToken, bool>>)(o => o.Token.Type == s));
-           
+
             if (input.Types.Contains(SymbolType.Token))
             {
                 predicates = predicates.Concat(new Expression<Func<AccountToken, bool>>[]
@@ -237,6 +243,7 @@ public class Query
 
                 predicates = predicates.Concat(symbolPredicates);
             }
+
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
@@ -276,8 +283,14 @@ public class Query
                                              || o.LowerCaseAddress.Contains(input.FuzzySearch));
         }
 
-        queryable = queryable.Where(o => o.Amount > 0);
+       
         queryable = QueryableExtensions.AccountTokenSort(queryable, input);
+
+        if (input.AmountGreaterThanZero != null && input.AmountGreaterThanZero.Value)
+        {
+            queryable = queryable.Where(o => o.Amount > 0);
+        }
+
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);
         var result = queryable.Skip(input.SkipCount)
@@ -300,6 +313,7 @@ public class Query
         {
             queryable = queryable.Where(o => o.Metadata.Block.BlockTime > input.BeginBlockTime);
         }
+
         if (!input.ChainId.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Metadata.ChainId == input.ChainId);
@@ -371,8 +385,8 @@ public class Query
         };
     }
 
-    
-        public static async Task<TransferInfoByBlockPageResultDto> TransferInfoByBlock(
+
+    public static async Task<TransferInfoByBlockPageResultDto> TransferInfoByBlock(
         [FromServices] IReadOnlyRepository<TransferInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetTransferByBlockDto input)
     {
@@ -400,6 +414,7 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
+
         if (!input.ToList.IsNullOrEmpty())
         {
             var predicates = input.ToList.Select(s =>
@@ -407,7 +422,7 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
-        
+
         if (!input.Methods.IsNullOrEmpty())
         {
             var predicates = input.Methods.Select(s =>
@@ -415,6 +430,7 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
+
         //add order by
         queryable = QueryableExtensions.TransferInfoSort(queryable, input);
 
@@ -427,6 +443,7 @@ public class Query
             Items = objectMapper.Map<List<TransferInfo>, List<TransferInfoDto>>(result)
         };
     }
+
     public static async Task<BlockBurnFeeListDto> BlockBurnFeeInfo(
         [FromServices] IReadOnlyRepository<BlockBurnFeeInfo> repository,
         [FromServices] IObjectMapper objectMapper, GetBlockBurnFeeDto input)
@@ -468,6 +485,7 @@ public class Query
         {
             queryable = queryable.Where(o => o.Address == input.Address);
         }
+
         if (!input.AddressList.IsNullOrEmpty())
         {
             var predicates = input.AddressList.Select(s =>
@@ -475,12 +493,16 @@ public class Query
             var predicate = predicates.Aggregate((prev, next) => prev.Or(next));
             queryable = queryable.Where(predicate);
         }
+
         if (!input.Symbol.IsNullOrWhiteSpace())
         {
             queryable = queryable.Where(o => o.Token.Symbol == input.Symbol);
         }
 
-        queryable = queryable.Where(o => o.FormatAmount > 0);
+        if (input.AmountGreaterThanZero != null && input.AmountGreaterThanZero.Value)
+        {
+            queryable = queryable.Where(o => o.FormatAmount > 0);
+        }
         queryable = QueryableExtensions.AccountCollectionSort(queryable, input);
 
         var totalCount = await QueryableExtensions.CountAsync(queryable);

@@ -56,7 +56,6 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
             await _tokenCreatedProcessor.ProcessAsync(logEventContext);
         }
 
-        await SaveDataAsync();
 
         var list = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto()
         {
@@ -79,6 +78,9 @@ public class TokenInfoQueryTests : TokenContractAppTestBase
         {
             ChainId = ChainId,
             TokenName = "TokenName0",
+            Search= "TokenName",
+            ExactSearch ="TokenName0",
+            FuzzySearch ="tokenname",
             SkipCount = 0,
             MaxResultCount = 10
         });

@@ -12,6 +12,10 @@ public class IssuedAndBurnedProcessorTests : TokenContractAppTestBase
     public IssuedAndBurnedProcessorTests()
     {
         _burnedProcessor = GetRequiredService<BurnedProcessor>();
+        TokenAppConstants.InitialBalanceEndHeight = new Dictionary<string, long>
+        {
+            { "AELF", 99 }
+        };
     }
 
     [Fact]
@@ -78,7 +82,6 @@ public class IssuedAndBurnedProcessorTests : TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(burned);
         await _burnedProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
 
         token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {

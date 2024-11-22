@@ -49,7 +49,6 @@ public class AccountInfoQueryTests : TokenContractAppTestBase
             var logEventContext = GenerateLogEventContext(transferred);
             await _transferredProcessor.ProcessAsync(logEventContext);
         }
-        await SaveDataAsync();
 
         var list = await Query.AccountInfo(AccountInfoReadOnlyRepository, ObjectMapper, new GetAccountInfoDto()
         {

@@ -31,7 +31,6 @@ public class ChainPrimaryTokenSymbolSetProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(chainPrimaryTokenSymbolSet);
         await _chainPrimaryTokenSymbolSetProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         token = await Query.TokenInfo(TokenInfoReadOnlyRepository, ObjectMapper, new GetTokenInfoDto
         {

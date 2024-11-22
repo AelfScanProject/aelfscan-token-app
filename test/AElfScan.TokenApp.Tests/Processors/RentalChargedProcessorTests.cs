@@ -30,7 +30,6 @@ public class RentalChargedProcessorTests: TokenContractAppTestBase
         };
         var logEventContext = GenerateLogEventContext(@event);
         await _rentalChargedProcessor.ProcessAsync(logEventContext);
-        await SaveDataAsync();
         
         var balancePayer = await Query.AccountToken(AccountTokenReadOnlyRepository, ObjectMapper,new GetAccountTokenDto
         {
